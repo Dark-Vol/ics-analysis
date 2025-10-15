@@ -211,7 +211,13 @@ class BloodAngelsTheme:
         
         # Создание кастомной цветовой схемы
         cmap = LinearSegmentedColormap.from_list('BloodAngels', blood_angels_colors)
-        plt.register_cmap('BloodAngels', cmap)
+        # Регистрация цветовой схемы (пропускаем, если не поддерживается)
+        try:
+            from matplotlib.cm import register_cmap
+            register_cmap('BloodAngels', cmap)
+        except (AttributeError, ImportError):
+            # Если регистрация не поддерживается, просто пропускаем
+            pass
         
         # Настройка параметров matplotlib
         plt.rcParams.update({
