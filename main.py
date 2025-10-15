@@ -24,6 +24,7 @@ from src.reliability import ReliabilityAnalyzer
 from src.simulation import NetworkSimulator
 from src.stress_test import StressTester
 from src.whatif import WhatIfAnalyzer, ParameterType, ParameterRange
+from src.gui.main_window import MainWindow as NewMainWindow
 
 # Цветовая схема приложения
 BLOOD_ANGELS_COLORS = {
@@ -2189,11 +2190,22 @@ def run_gui_mode():
     # Создание главного окна
     root = tk.Tk()
     
-    # Создание конфигурации (заглушка)
-    config = {}
+    # Загрузка конфигурации
+    config_path = 'config.json'
+    if os.path.exists(config_path):
+        import json
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+    else:
+        # Базовая конфигурация по умолчанию
+        config = {
+            "simulation": {"time_steps": 1000, "dt": 0.1, "random_seed": 42},
+            "network": {"nodes": 10, "connections": 0.3, "bandwidth": 1000, "latency": 10, "reliability": 0.95},
+            "adverse_conditions": {"noise_level": 0.1, "interference_probability": 0.05, "failure_rate": 0.02}
+        }
     
-    # Создание главного окна приложения
-    app = MainWindow(root, config)
+    # Создание главного окна приложения с пагинацией
+    app = NewMainWindow(root, config)
     
     # Центрирование окна на экране
     root.update_idletasks()
