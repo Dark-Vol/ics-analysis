@@ -25,6 +25,13 @@ class ParameterType(Enum):
     FAILURE_RATE = "failure_rate"
     TRAFFIC_LOAD = "traffic_load"
     NETWORK_TOPOLOGY = "network_topology"
+    THREAT_LEVEL = "threat_level"
+    ENCRYPTION = "encryption"
+    NODE_LOAD = "node_load"
+    LINK_LOAD = "link_load"
+    LATENCY = "latency"
+    RELIABILITY = "reliability"
+    ADVERSE_CONDITIONS = "adverse_conditions"
 
 
 @dataclass
@@ -363,6 +370,36 @@ class WhatIfAnalyzer:
             if component_id in modified_system.nodes:
                 modified_system.nodes[component_id].reliability = 1 - new_value
         
+        elif parameter_type == ParameterType.THREAT_LEVEL:
+            if component_id in modified_system.nodes:
+                modified_system.nodes[component_id].threat_level = new_value
+        
+        elif parameter_type == ParameterType.ENCRYPTION:
+            if component_id in modified_system.nodes:
+                modified_system.nodes[component_id].encryption = bool(new_value)
+        
+        elif parameter_type == ParameterType.NODE_LOAD:
+            if component_id in modified_system.nodes:
+                modified_system.nodes[component_id].load = new_value
+        
+        elif parameter_type == ParameterType.LINK_LOAD:
+            # Ищем канал по компоненту
+            for (source, target), link in modified_system.links.items():
+                if f"{source}_{target}" == component_id:
+                    link.load = new_value
+                    break
+        
+        elif parameter_type == ParameterType.LATENCY:
+            # Ищем канал по компоненту
+            for (source, target), link in modified_system.links.items():
+                if f"{source}_{target}" == component_id:
+                    link.latency = new_value
+                    break
+        
+        elif parameter_type == ParameterType.RELIABILITY:
+            if component_id in modified_system.nodes:
+                modified_system.nodes[component_id].reliability = new_value
+        
         return modified_system
     
     def _create_random_system_modification(self) -> SystemModel:
@@ -500,6 +537,121 @@ class WhatIfAnalyzer:
             recommendations.append("Изменение параметра не оказывает значительного влияния на систему")
         
         return recommendations
+    
+    def analyze_adverse_conditions_impact(self, adverse_condition_type: str, 
+                                        intensity_range: Tuple[float, float],
+                                        target_nodes: List[str] = None,
+                                        simulation_duration: float = 300) -> Dict:
+        """Анализ влияния неблагоприятных условий"""
+        if target_nodes is None:
+            target_nodes = list(self.system_model.nodes.keys())
+        
+        results = {
+            'condition_type': adverse_condition_type,
+            'intensity_range': intensity_range,
+            'impact_analysis': []
+        }
+        
+        # Тестируем различные интенсивности
+        intensities = np.linspace(intensity_range[0], intensity_range[1], 10)
+        
+        for intensity in intensities:
+            # Создаем систему с неблагоприятными условиями
+            modified_system = self._create_system_with_adverse_conditions(
+                adverse_condition_type, intensity, target_nodes
+            )
+            
+            # Запускаем симуляцию
+            simulator = NetworkSimulator(modified_system, simulation_duration)
+            simulator.run_simulation()
+            
+            metrics = simulator.get_simulation_results()['metrics']
+            
+            # Анализируем влияние
+            baseline_metrics = self.system_model.calculate_network_metrics()
+            connectivity_metrics = self.system_model.calculate_connectivity_metrics()
+            data_loss_metrics = self.system_model.calculate_data_loss_metrics()
+            degradation_metrics = self.system_model.calculate_performance_degradation()
+            
+            impact = {
+                'intensity': intensity,
+                'throughput_impact': metrics.get('network_throughput', 0) / baseline_metrics.get('total_bandwidth', 1),
+                'connectivity_impact': connectivity_metrics.get('connectivity_coefficient', 1.0),
+                'data_loss_impact': data_loss_metrics.get('total_data_loss', 0),
+                'performance_degradation': degradation_metrics.get('overall_degradation', 0),
+                'availability_impact': data_loss_metrics.get('availability_coefficient', 1.0)
+            }
+            
+            results['impact_analysis'].append(impact)
+        
+        return results
+    
+    def _create_system_with_adverse_conditions(self, condition_type: str, 
+                                             intensity: float, 
+                                             target_nodes: List[str]) -> SystemModel:
+        """Создать систему с неблагоприятными условиями"""
+        from ..models.adverse_conditions import AdverseConditions, AdverseConditionType
+        
+        # Копируем базовую систему
+        modified_system = SystemModel(f"{self.system_model.name}_adverse")
+        
+        for node_id, node in self.system_model.nodes.items():
+            modified_system.add_node(node)
+        
+        for (source, target), link in self.system_model.links.items():
+            modified_system.add_link(link)
+        
+        # Применяем неблагоприятные условия
+        adverse_conditions = AdverseConditions()
+        
+        if condition_type == "cyber_attack":
+            adverse_conditions.simulate_cyber_attack(
+                target_nodes=[int(node.replace('node_', '')) for node in target_nodes],
+                attack_type="generic",
+                intensity=intensity,
+                duration=300
+            )
+        elif condition_type == "dos_attack":
+            adverse_conditions.simulate_dos_attack(
+                target_nodes=[int(node.replace('node_', '')) for node in target_nodes],
+                intensity=intensity,
+                duration=300
+            )
+        elif condition_type == "network_overload":
+            adverse_conditions.simulate_network_overload(
+                target_nodes=[int(node.replace('node_', '')) for node in target_nodes],
+                intensity=intensity,
+                duration=300
+            )
+        elif condition_type == "physical_damage":
+            adverse_conditions.simulate_physical_damage(
+                target_nodes=[int(node.replace('node_', '')) for node in target_nodes],
+                damage_level=intensity,
+                duration=300
+            )
+        elif condition_type == "environmental":
+            adverse_conditions.simulate_environmental_conditions(
+                target_nodes=[int(node.replace('node_', '')) for node in target_nodes],
+                factor="weather",
+                intensity=intensity,
+                duration=300
+            )
+        
+        # Применяем деградацию к узлам
+        for node_id in target_nodes:
+            if node_id in modified_system.nodes:
+                node = modified_system.nodes[node_id]
+                degradation = adverse_conditions.calculate_comprehensive_degradation(
+                    int(node_id.replace('node_', ''))
+                )
+                
+                # Применяем деградацию к параметрам узла
+                node.capacity *= (1 - degradation['bandwidth_degradation'])
+                node.reliability = max(0.1, node.reliability - degradation['reliability_decrease'])
+                node.load = min(1.0, node.load + degradation['performance_degradation'])
+                node.threat_level = min(1.0, node.threat_level + degradation['security_impact'])
+        
+        return modified_system
     
     def _generate_scenario_recommendations(self, scenario: WhatIfScenario, 
                                          impact_metrics: Dict) -> List[str]:
