@@ -41,6 +41,9 @@ class Node:
     reliability: float  # Надежность (0-1)
     cpu_load: float = 0.0  # Загрузка CPU (0-1)
     memory_usage: float = 0.0  # Использование памяти (0-1)
+    load: float = 0.0  # Общая загрузка узла (0-1)
+    threat_level: float = 0.1  # Уровень угрозы/уязвимости (0-1)
+    encryption: bool = True  # Наличие криптографической защиты
     x: float = 0.0  # Координата X для визуализации
     y: float = 0.0  # Координата Y для визуализации
 
@@ -55,6 +58,9 @@ class Link:
     reliability: float  # Надежность (0-1)
     link_type: LinkType
     utilization: float = 0.0  # Использование канала (0-1)
+    load: float = 0.0  # Текущая загрузка канала (0-1)
+    encryption: bool = True  # Наличие криптографической защиты
+    threat_level: float = 0.1  # Уровень угрозы/уязвимости (0-1)
 
 
 class SystemModel:
@@ -77,6 +83,9 @@ class SystemModel:
             reliability=node.reliability,
             cpu_load=node.cpu_load,
             memory_usage=node.memory_usage,
+            load=node.load,
+            threat_level=node.threat_level,
+            encryption=node.encryption,
             x=node.x,
             y=node.y
         )
@@ -91,7 +100,10 @@ class SystemModel:
             latency=link.latency,
             reliability=link.reliability,
             link_type=link.link_type.value,
-            utilization=link.utilization
+            utilization=link.utilization,
+            load=link.load,
+            encryption=link.encryption,
+            threat_level=link.threat_level
         )
     
     def remove_node(self, node_id: str):
@@ -332,9 +344,123 @@ class SystemModel:
             )
             self.add_link(link)
     
+    def calculate_connectivity_metrics(self) -> Dict[str, float]:
+        """Рассчитать метрики связности сети"""
+        if not self.graph.nodes():
+            return {}
+        
+        metrics = {}
+        
+        # Базовая связность
+        metrics['is_connected'] = nx.is_connected(self.graph)
+        metrics['num_components'] = nx.number_connected_components(self.graph)
+        
+        if metrics['is_connected']:
+            metrics['diameter'] = nx.diameter(self.graph)
+            metrics['radius'] = nx.radius(self.graph)
+            metrics['average_path_length'] = nx.average_shortest_path_length(self.graph)
+            metrics['eccentricity'] = nx.eccentricity(self.graph)
+        else:
+            # Для несвязных графов анализируем компоненты
+            components = list(nx.connected_components(self.graph))
+            component_sizes = [len(comp) for comp in components]
+            metrics['largest_component_size'] = max(component_sizes)
+            metrics['component_size_variance'] = np.var(component_sizes) if component_sizes else 0
+        
+        # Коэффициент связности
+        metrics['connectivity_coefficient'] = self._calculate_connectivity_coefficient()
+        
+        # Устойчивость к отказам
+        metrics['node_connectivity'] = nx.node_connectivity(self.graph) if len(self.graph.nodes()) > 1 else 0
+        metrics['edge_connectivity'] = nx.edge_connectivity(self.graph) if len(self.graph.nodes()) > 1 else 0
+        
+        return metrics
+    
+    def _calculate_connectivity_coefficient(self) -> float:
+        """Рассчитать коэффициент связности сети"""
+        if not self.graph.nodes():
+            return 0.0
+        
+        n = len(self.graph.nodes())
+        if n <= 1:
+            return 1.0
+        
+        # Количество достижимых пар узлов
+        reachable_pairs = 0
+        total_pairs = n * (n - 1)
+        
+        for source in self.graph.nodes():
+            for target in self.graph.nodes():
+                if source != target and nx.has_path(self.graph, source, target):
+                    reachable_pairs += 1
+        
+        return reachable_pairs / total_pairs if total_pairs > 0 else 0.0
+    
+    def calculate_data_loss_metrics(self) -> Dict[str, float]:
+        """Рассчитать метрики потерь данных"""
+        if not self.graph.nodes():
+            return {}
+        
+        metrics = {}
+        
+        # Потери из-за отказов узлов
+        node_failure_loss = 0.0
+        for node_id, node in self.nodes.items():
+            failure_prob = 1 - node.reliability
+            node_failure_loss += failure_prob * node.capacity
+        
+        metrics['node_failure_data_loss'] = node_failure_loss
+        
+        # Потери из-за отказов каналов
+        link_failure_loss = 0.0
+        for (source, target), link in self.links.items():
+            failure_prob = 1 - link.reliability
+            link_failure_loss += failure_prob * link.bandwidth
+        
+        metrics['link_failure_data_loss'] = link_failure_loss
+        
+        # Общие потери данных
+        metrics['total_data_loss'] = node_failure_loss + link_failure_loss
+        
+        # Коэффициент доступности
+        total_capacity = sum(node.capacity for node in self.nodes.values())
+        total_bandwidth = sum(link.bandwidth for link in self.links.values())
+        metrics['availability_coefficient'] = 1 - (metrics['total_data_loss'] / (total_capacity + total_bandwidth)) if (total_capacity + total_bandwidth) > 0 else 1.0
+        
+        return metrics
+    
+    def calculate_performance_degradation(self) -> Dict[str, float]:
+        """Рассчитать деградацию производительности"""
+        if not self.graph.nodes():
+            return {}
+        
+        metrics = {}
+        
+        # Деградация из-за загрузки узлов
+        avg_node_load = np.mean([node.load for node in self.nodes.values()]) if self.nodes else 0
+        metrics['node_load_degradation'] = avg_node_load
+        
+        # Деградация из-за загрузки каналов
+        avg_link_load = np.mean([link.load for link in self.links.values()]) if self.links else 0
+        metrics['link_load_degradation'] = avg_link_load
+        
+        # Деградация из-за уровня угроз
+        avg_threat_level = np.mean([node.threat_level for node in self.nodes.values()]) if self.nodes else 0
+        metrics['threat_degradation'] = avg_threat_level
+        
+        # Общая деградация производительности
+        metrics['overall_degradation'] = (metrics['node_load_degradation'] + 
+                                        metrics['link_load_degradation'] + 
+                                        metrics['threat_degradation']) / 3
+        
+        return metrics
+    
     def get_network_summary(self) -> str:
         """Получить текстовое описание сети"""
         metrics = self.calculate_network_metrics()
+        connectivity = self.calculate_connectivity_metrics()
+        data_loss = self.calculate_data_loss_metrics()
+        degradation = self.calculate_performance_degradation()
         
         summary = f"""
 === {self.name} ===
@@ -343,13 +469,25 @@ class SystemModel:
 Плотность: {metrics.get('density', 0):.3f}
 Средняя надежность: {metrics.get('average_reliability', 0):.3f}
 Общая пропускная способность: {metrics.get('total_bandwidth', 0):.1f} Мбит/с
+
+=== Связность ===
+Связность: {'Да' if connectivity.get('is_connected', False) else 'Нет'}
+Компоненты: {connectivity.get('num_components', 0)}
+Коэффициент связности: {connectivity.get('connectivity_coefficient', 0):.3f}
+Узловая связность: {connectivity.get('node_connectivity', 0)}
+Реберная связность: {connectivity.get('edge_connectivity', 0)}
+
+=== Потери данных ===
+Коэффициент доступности: {data_loss.get('availability_coefficient', 0):.3f}
+Потери узлов: {data_loss.get('node_failure_data_loss', 0):.1f}
+Потери каналов: {data_loss.get('link_failure_data_loss', 0):.1f}
+
+=== Деградация производительности ===
+Общая деградация: {degradation.get('overall_degradation', 0):.3f}
+Деградация узлов: {degradation.get('node_load_degradation', 0):.3f}
+Деградация каналов: {degradation.get('link_load_degradation', 0):.3f}
+Деградация угроз: {degradation.get('threat_degradation', 0):.3f}
 """
-        
-        if 'num_components' in metrics:
-            summary += f"Компоненты связности: {metrics['num_components']}\n"
-        else:
-            summary += f"Средняя длина пути: {metrics.get('average_path_length', 0):.2f}\n"
-            summary += f"Диаметр сети: {metrics.get('diameter', 0)}\n"
         
         return summary
 
