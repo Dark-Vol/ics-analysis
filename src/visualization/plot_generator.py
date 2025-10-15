@@ -267,7 +267,7 @@ class PlotGenerator:
             ax1.legend()
         
         # График задержки
-        ax2 = fig.add_subplot(gs[0, 2:])
+        ax2 = fig.add_subplot(gs[0, 2:4])  # Исправлено: ограничиваем до 4 колонок
         if metrics_history:
             latency = [m.latency for m in metrics_history]
             ax2.plot(timestamps, latency, 'r-', linewidth=2, label='Задержка')
@@ -367,6 +367,8 @@ class PlotGenerator:
         ax.set_ylim(0, 1)
         ax.axis('off')
         return fig
+
+
 
 
 
