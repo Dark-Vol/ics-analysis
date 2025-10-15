@@ -86,14 +86,17 @@ class NetworkViewer:
                              style='BloodAngels.TLabel')
         info_label.pack(side=tk.RIGHT)
     
-    def update_network(self, network: NetworkModel):
+    def update_network(self, network):
         """Обновляет отображение сети"""
         self.network = network
         self._draw_network()
         self._update_network_info()
         # Принудительное обновление интерфейса
         self.network_canvas.draw_idle()
-        self.parent.root.update_idletasks()
+        if hasattr(self.parent, 'root'):
+            self.parent.root.update_idletasks()
+        else:
+            self.parent.update_idletasks()
     
     def _draw_network(self):
         """Отрисовывает сеть"""
@@ -108,46 +111,94 @@ class NetworkViewer:
         node_colors = []
         node_sizes = []
         
-        for node in self.network.nodes:
-            pos[node.id] = (node.x, node.y)
-            
-            # Цвет узла зависит от надежности (в стиле Кровавых Ангелов)
-            if node.reliability >= 0.95:
-                node_colors.append(self.theme.COLORS['success'])
-            elif node.reliability >= 0.9:
-                node_colors.append(self.theme.COLORS['primary_gold'])
-            elif node.reliability >= 0.8:
-                node_colors.append(self.theme.COLORS['warning'])
-            else:
-                node_colors.append(self.theme.COLORS['danger'])
-            
-            # Размер узла зависит от пропускной способности
-            size = max(50, node.capacity / 10)
-            node_sizes.append(size)
+        # Проверяем тип сети и обрабатываем соответственно
+        if hasattr(self.network, 'nodes') and isinstance(self.network.nodes, dict):
+            # SystemModel: nodes это словарь {id: Node}
+            for node_id, node in self.network.nodes.items():
+                pos[node_id] = (node.x, node.y)
+                
+                # Цвет узла зависит от надежности (в стиле Кровавых Ангелов)
+                if node.reliability >= 0.95:
+                    node_colors.append(self.theme.COLORS['success'])
+                elif node.reliability >= 0.9:
+                    node_colors.append(self.theme.COLORS['primary_gold'])
+                elif node.reliability >= 0.8:
+                    node_colors.append(self.theme.COLORS['warning'])
+                else:
+                    node_colors.append(self.theme.COLORS['danger'])
+                
+                # Размер узла зависит от пропускной способности
+                size = max(50, node.capacity / 10)
+                node_sizes.append(size)
+        elif hasattr(self.network, 'nodes') and isinstance(self.network.nodes, list):
+            # NetworkModel: nodes это список NetworkNode
+            for node in self.network.nodes:
+                pos[node.id] = (node.x, node.y)
+                
+                # Цвет узла зависит от надежности (в стиле Кровавых Ангелов)
+                if node.reliability >= 0.95:
+                    node_colors.append(self.theme.COLORS['success'])
+                elif node.reliability >= 0.9:
+                    node_colors.append(self.theme.COLORS['primary_gold'])
+                elif node.reliability >= 0.8:
+                    node_colors.append(self.theme.COLORS['warning'])
+                else:
+                    node_colors.append(self.theme.COLORS['danger'])
+                
+                # Размер узла зависит от пропускной способности
+                size = max(50, node.capacity / 10)
+                node_sizes.append(size)
+        else:
+            print(f"[ERROR] Неподдерживаемый тип сети: {type(self.network)}")
+            return
         
         # Отрисовка связей
         edge_colors = []
         edge_widths = []
+        edges = []
         
-        for link in self.network.links:
-            # Цвет связи зависит от надежности (в стиле Кровавых Ангелов)
-            if link.reliability >= 0.95:
-                edge_colors.append(self.theme.COLORS['success'])
-            elif link.reliability >= 0.9:
-                edge_colors.append(self.theme.COLORS['primary_gold'])
-            elif link.reliability >= 0.8:
-                edge_colors.append(self.theme.COLORS['warning'])
-            else:
-                edge_colors.append(self.theme.COLORS['danger'])
-            
-            # Толщина связи зависит от пропускной способности
-            width = max(1, link.bandwidth / 20)
-            edge_widths.append(width)
+        # Проверяем тип связей и обрабатываем соответственно
+        if hasattr(self.network, 'links') and isinstance(self.network.links, dict):
+            # SystemModel: links это словарь {(source, target): Link}
+            for (source, target), link in self.network.links.items():
+                edges.append((source, target))
+                
+                # Цвет связи зависит от надежности (в стиле Кровавых Ангелов)
+                if link.reliability >= 0.95:
+                    edge_colors.append(self.theme.COLORS['success'])
+                elif link.reliability >= 0.9:
+                    edge_colors.append(self.theme.COLORS['primary_gold'])
+                elif link.reliability >= 0.8:
+                    edge_colors.append(self.theme.COLORS['warning'])
+                else:
+                    edge_colors.append(self.theme.COLORS['danger'])
+                
+                # Толщина связи зависит от пропускной способности
+                width = max(1, link.bandwidth / 20)
+                edge_widths.append(width)
+        elif hasattr(self.network, 'links') and isinstance(self.network.links, list):
+            # NetworkModel: links это список NetworkLink
+            for link in self.network.links:
+                edges.append((link.source, link.target))
+                
+                # Цвет связи зависит от надежности (в стиле Кровавых Ангелов)
+                if link.reliability >= 0.95:
+                    edge_colors.append(self.theme.COLORS['success'])
+                elif link.reliability >= 0.9:
+                    edge_colors.append(self.theme.COLORS['primary_gold'])
+                elif link.reliability >= 0.8:
+                    edge_colors.append(self.theme.COLORS['warning'])
+                else:
+                    edge_colors.append(self.theme.COLORS['danger'])
+                
+                # Толщина связи зависит от пропускной способности
+                width = max(1, link.bandwidth / 20)
+                edge_widths.append(width)
         
         # Создание графа NetworkX
         G = nx.Graph()
         G.add_nodes_from(pos.keys())
-        G.add_edges_from([(link.source, link.target) for link in self.network.links])
+        G.add_edges_from(edges)
         
         # Отрисовка графа
         nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=node_sizes, 
@@ -204,8 +255,20 @@ class NetworkViewer:
             self.network_info_var.set("Сеть не загружена")
             return
         
-        metrics = self.network.get_network_metrics()
-        info_text = f"Узлы: {metrics.get('nodes_count', 0)}, Связи: {metrics.get('links_count', 0)}, Плотность: {metrics.get('density', 0):.2f}"
+        # Проверяем тип сети и получаем метрики соответственно
+        if hasattr(self.network, 'get_network_metrics'):
+            # NetworkModel
+            metrics = self.network.get_network_metrics()
+            nodes_count = metrics.get('nodes_count', 0)
+            links_count = metrics.get('links_count', 0)
+            density = metrics.get('density', 0)
+        else:
+            # SystemModel
+            nodes_count = len(self.network.nodes) if hasattr(self.network, 'nodes') else 0
+            links_count = len(self.network.links) if hasattr(self.network, 'links') else 0
+            density = 0.0  # Для SystemModel плотность не вычисляется
+        
+        info_text = f"Узлы: {nodes_count}, Связи: {links_count}, Плотность: {density:.2f}"
         self.network_info_var.set(info_text)
     
     def _refresh_network(self):
