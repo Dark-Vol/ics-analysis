@@ -1,7 +1,6 @@
 # Git Commands for ICS Project - All Files
 # Команды для коммита всех изменений в проекте ИКС
 
-## Документация
 git add docs/ANALYSIS_TIME_BUG_FIX_REPORT.md
 git commit -m "Документация: отчет об исправлении бага времени анализа"
 
@@ -144,20 +143,16 @@ git commit -m "Тест: проверка остановки симуляции"
 git add scripts/test_string_attribute_fix.py
 git commit -m "Тест: проверка исправления атрибутов строк"
 
-## Новые модули отчетов
 git add src/reports/
 git commit -m "Добавлен модуль отчетов: генерация Word документов"
 
-## Кэш файлы Python
 git add src/gui/__pycache__/network_selection_dialog.cpython-313.pyc
 git commit -m "Кэш: обновлен кэш network_selection_dialog"
 
 git add src/utils/__pycache__/program_state_manager.cpython-313.pyc
 git commit -m "Кэш: обновлен кэш program_state_manager"
 
-## Файл с командами git
 git add git_commands_all.txt
 git commit -m "Добавлен файл с git командами для всех изменений"
 
-## Финальный push
 git push -u origin main
