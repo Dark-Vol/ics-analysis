@@ -1,0 +1,163 @@
+# Git Commands for ICS Project - All Files
+# Команды для коммита всех изменений в проекте ИКС
+
+## Документация
+git add docs/ANALYSIS_TIME_BUG_FIX_REPORT.md
+git commit -m "Документация: отчет об исправлении бага времени анализа"
+
+git add docs/ANALYSIS_TIME_FEATURE_REPORT.md
+git commit -m "Документация: отчет о функции времени анализа"
+
+git add docs/ANALYSIS_TIME_PERSISTENCE_FIX_REPORT.md
+git commit -m "Документация: отчет об исправлении сохранения времени анализа"
+
+git add docs/BUG_FIXES_REPORT.md
+git commit -m "Документация: отчет об исправлениях багов"
+
+git add docs/CONTROL_PANEL_FIX_REPORT.md
+git commit -m "Документация: отчет об исправлении панели управления"
+
+git add docs/ENHANCED_FEATURES_REPORT.md
+git commit -m "Документация: отчет о расширенных функциях"
+
+git add docs/FINAL_ANALYSIS_TIME_BUG_FIX_REPORT.md
+git commit -m "Документация: финальный отчет об исправлении времени анализа"
+
+git add docs/FINAL_BUG_FIX_REPORT.md
+git commit -m "Документация: финальный отчет об исправлениях"
+
+git add docs/FINAL_FIXES_REPORT.md
+git commit -m "Документация: финальный отчет об исправлениях"
+
+git add docs/FINAL_NETWORK_LOAD_FIX_REPORT.md
+git commit -m "Документация: отчет об исправлении загрузки сети"
+
+git add docs/FIXES_REPORT.md
+git commit -m "Документация: отчет об исправлениях"
+
+git add docs/GUI_FIXES_REPORT.md
+git commit -m "Документация: отчет об исправлениях GUI"
+
+git add docs/GUI_IMPROVEMENTS_GUIDE.md
+git commit -m "Документация: руководство по улучшениям GUI"
+
+git add docs/IMPLEMENTATION_COMPLETE_REPORT.md
+git commit -m "Документация: отчет о завершении реализации"
+
+git add docs/NETWORK_CREATION_FIX_REPORT.md
+git commit -m "Документация: отчет об исправлении создания сети"
+
+git add docs/NETWORK_LOAD_ERROR_FIX_REPORT.md
+git commit -m "Документация: отчет об исправлении ошибок загрузки сети"
+
+git add docs/NETWORK_SAVE_LOAD_FIX_REPORT.md
+git commit -m "Документация: отчет об исправлении сохранения и загрузки сети"
+
+git add docs/NETWORK_SELECTION_FIX_REPORT.md
+git commit -m "Документация: отчет об исправлении выбора сети"
+
+git add docs/NEW_FEATURES_IMPLEMENTATION.md
+git commit -m "Документация: реализация новых функций"
+
+git add docs/PROJECT_COMPLETION_SUMMARY.md
+git commit -m "Документация: итоговый отчет о завершении проекта"
+
+git add docs/SIMULATOR_CREATION_FIX_REPORT.md
+git commit -m "Документация: отчет об исправлении создания симулятора"
+
+git add docs/STOP_BUTTON_FIX_REPORT.md
+git commit -m "Документация: отчет об исправлении кнопки остановки"
+
+git add docs/STRING_ATTRIBUTE_ERROR_FIX_REPORT.md
+git commit -m "Документация: отчет об исправлении ошибки атрибутов строк"
+
+git add docs/USER_GUIDE_NEW_FEATURES.md
+git commit -m "Документация: руководство пользователя по новым функциям"
+
+## Тестовые скрипты
+git add scripts/debug_database.py
+git commit -m "Тест: скрипт отладки базы данных"
+
+git add scripts/demo_enhanced_features.py
+git commit -m "Тест: демонстрация расширенных функций"
+
+git add scripts/test_analysis_time_fix.py
+git commit -m "Тест: проверка исправления времени анализа"
+
+git add scripts/test_analysis_time_persistence.py
+git commit -m "Тест: проверка сохранения времени анализа"
+
+git add scripts/test_analysis_time_setting.py
+git commit -m "Тест: проверка настройки времени анализа"
+
+git add scripts/test_bug_fixes.py
+git commit -m "Тест: проверка исправлений багов"
+
+git add scripts/test_control_panel.py
+git commit -m "Тест: проверка панели управления"
+
+git add scripts/test_final_fix.py
+git commit -m "Тест: финальная проверка исправлений"
+
+git add scripts/test_fixes.py
+git commit -m "Тест: проверка исправлений"
+
+git add scripts/test_gui_improvements.py
+git commit -m "Тест: проверка улучшений GUI"
+
+git add scripts/test_gui_launch.py
+git commit -m "Тест: проверка запуска GUI"
+
+git add scripts/test_network_creation.py
+git commit -m "Тест: проверка создания сети"
+
+git add scripts/test_network_load_fix.py
+git commit -m "Тест: проверка исправления загрузки сети"
+
+git add scripts/test_network_save_load.py
+git commit -m "Тест: проверка сохранения и загрузки сети"
+
+git add scripts/test_network_selection.py
+git commit -m "Тест: проверка выбора сети"
+
+git add scripts/test_network_viewer_fix.py
+git commit -m "Тест: проверка исправления просмотрщика сети"
+
+git add scripts/test_new_features.py
+git commit -m "Тест: проверка новых функций"
+
+git add scripts/test_pagination_only.py
+git commit -m "Тест: проверка пагинации"
+
+git add scripts/test_report_debug.py
+git commit -m "Тест: отладка отчетов"
+
+git add scripts/test_simulator_creation.py
+git commit -m "Тест: проверка создания симулятора"
+
+git add scripts/test_specific_network.py
+git commit -m "Тест: проверка конкретной сети"
+
+git add scripts/test_stop_simulation.py
+git commit -m "Тест: проверка остановки симуляции"
+
+git add scripts/test_string_attribute_fix.py
+git commit -m "Тест: проверка исправления атрибутов строк"
+
+## Новые модули отчетов
+git add src/reports/
+git commit -m "Добавлен модуль отчетов: генерация Word документов"
+
+## Кэш файлы Python
+git add src/gui/__pycache__/network_selection_dialog.cpython-313.pyc
+git commit -m "Кэш: обновлен кэш network_selection_dialog"
+
+git add src/utils/__pycache__/program_state_manager.cpython-313.pyc
+git commit -m "Кэш: обновлен кэш program_state_manager"
+
+## Файл с командами git
+git add git_commands_all.txt
+git commit -m "Добавлен файл с git командами для всех изменений"
+
+## Финальный push
+git push -u origin main
