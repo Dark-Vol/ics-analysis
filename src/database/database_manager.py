@@ -29,6 +29,7 @@ class DatabaseManager:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE,
                 description TEXT,
+                analysis_time INTEGER DEFAULT 300,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 network_data TEXT NOT NULL
@@ -66,10 +67,32 @@ class DatabaseManager:
             )
         ''')
         
+        # Миграция: добавление поля analysis_time если его нет
+        try:
+            # Проверяем, существует ли поле analysis_time
+            cursor.execute("PRAGMA table_info(networks)")
+            columns = cursor.fetchall()
+            column_names = [col[1] for col in columns]
+            
+            if 'analysis_time' not in column_names:
+                # Добавляем поле без DEFAULT (SQLite не поддерживает DEFAULT в ALTER TABLE)
+                cursor.execute("ALTER TABLE networks ADD COLUMN analysis_time INTEGER")
+                
+                # Устанавливаем значение по умолчанию для существующих записей
+                cursor.execute("UPDATE networks SET analysis_time = 300 WHERE analysis_time IS NULL")
+                
+                conn.commit()
+                print("[INFO] Добавлено поле analysis_time в таблицу networks")
+            else:
+                print("[INFO] Поле analysis_time уже существует")
+                
+        except sqlite3.OperationalError as e:
+            print(f"[WARNING] Ошибка при добавлении поля analysis_time: {e}")
+        
         conn.commit()
         conn.close()
     
-    def save_network(self, network: NetworkModel, name: str, description: str = "") -> int:
+    def save_network(self, network: NetworkModel, name: str, description: str = "", analysis_time: int = 300) -> int:
         """Сохраняет сеть в базу данных"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -84,9 +107,9 @@ class DatabaseManager:
                 network_id = existing[0]
                 cursor.execute('''
                     UPDATE networks 
-                    SET description = ?, updated_at = CURRENT_TIMESTAMP, network_data = ?
+                    SET description = ?, analysis_time = ?, updated_at = CURRENT_TIMESTAMP, network_data = ?
                     WHERE id = ?
-                ''', (description, json.dumps(self._serialize_network(network)), network_id))
+                ''', (description, analysis_time, json.dumps(self._serialize_network(network)), network_id))
                 
                 # Удаляем старые узлы и связи
                 cursor.execute("DELETE FROM network_nodes WHERE network_id = ?", (network_id,))
@@ -94,9 +117,9 @@ class DatabaseManager:
             else:
                 # Создаем новую сеть
                 cursor.execute('''
-                    INSERT INTO networks (name, description, network_data)
-                    VALUES (?, ?, ?)
-                ''', (name, description, json.dumps(self._serialize_network(network))))
+                    INSERT INTO networks (name, description, analysis_time, network_data)
+                    VALUES (?, ?, ?, ?)
+                ''', (name, description, analysis_time, json.dumps(self._serialize_network(network))))
                 network_id = cursor.lastrowid
             
             # Сохраняем узлы
@@ -213,7 +236,7 @@ class DatabaseManager:
         
         try:
             cursor.execute('''
-                SELECT id, name, description, created_at, updated_at
+                SELECT id, name, description, analysis_time, created_at, updated_at
                 FROM networks ORDER BY updated_at DESC
             ''')
             
@@ -223,11 +246,41 @@ class DatabaseManager:
                     'id': row[0],
                     'name': row[1],
                     'description': row[2],
-                    'created_at': row[3],
-                    'updated_at': row[4]
+                    'analysis_time': row[3],
+                    'created_at': row[4],
+                    'updated_at': row[5]
                 })
             
             return networks
+            
+        finally:
+            conn.close()
+    
+    def get_network(self, network_id: int) -> Optional[Dict[str, Any]]:
+        """Получает данные сети по ID"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('''
+                SELECT id, name, description, analysis_time, created_at, updated_at, network_data
+                FROM networks 
+                WHERE id = ?
+            ''', (network_id,))
+            
+            row = cursor.fetchone()
+            if row:
+                network_data = json.loads(row[6])  # network_data теперь в позиции 6
+                return {
+                    'id': row[0],
+                    'name': row[1],
+                    'description': row[2],
+                    'analysis_time': row[3],
+                    'created_at': row[4],
+                    'updated_at': row[5],
+                    'network_data': network_data
+                }
+            return None
             
         finally:
             conn.close()
@@ -244,6 +297,30 @@ class DatabaseManager:
             
             conn.commit()
             return cursor.rowcount > 0
+            
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+    
+    def delete_all_networks(self) -> int:
+        """Удаляет все сети из базы данных"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        try:
+            # Сначала получаем количество сетей для возврата
+            cursor.execute("SELECT COUNT(*) FROM networks")
+            count = cursor.fetchone()[0]
+            
+            # Удаляем все данные
+            cursor.execute("DELETE FROM network_links")
+            cursor.execute("DELETE FROM network_nodes")
+            cursor.execute("DELETE FROM networks")
+            
+            conn.commit()
+            return count
             
         except Exception as e:
             conn.rollback()
