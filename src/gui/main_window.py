@@ -21,6 +21,7 @@ from .control_panel import ControlPanel
 from .themes.blood_angels_theme import BloodAngelsTheme
 from .network_dialog import NetworkDialog
 from ..database.database_manager import DatabaseManager
+from ..utils.program_state_manager import ProgramStateManager
 
 class MainWindow:
     """Главное окно приложения в стиле Кровавых Ангелов"""
@@ -30,6 +31,10 @@ class MainWindow:
         self.config = config
         self.simulator = None
         self.db_manager = DatabaseManager()
+        
+        # Менеджер состояния программы
+        self.program_state_manager = ProgramStateManager()
+        self.program_state_manager.add_state_change_callback(self._on_program_state_changed)
         
         # Настройка темы
         self.theme = BloodAngelsTheme()
@@ -97,7 +102,7 @@ class MainWindow:
     def _create_widgets(self):
         """Создает виджеты интерфейса"""
         # Создание панели управления
-        self.control_panel = ControlPanel(self, self.config)
+        self.control_panel = None  # Будет создан в _create_control_panel
         
         # Создание панели метрик
         self.metrics_panel = MetricsPanel(self)
@@ -125,30 +130,189 @@ class MainWindow:
         # Создание notebook для вкладок графиков
         self.plots_notebook = ttk.Notebook(parent)
         
+        # Вкладка "Контрольная панель"
+        self.control_frame = ttk.Frame(self.plots_notebook)
+        self.plots_notebook.add(self.control_frame, text="🎛️ Контрольная панель")
+        
+        # Создание панели управления
+        self._create_control_panel()
+        
+        # Вкладка "Панель визуализации"
+        self.visualization_frame = ttk.Frame(self.plots_notebook)
+        self.plots_notebook.add(self.visualization_frame, text="📊 Панель визуализации")
+        
+        # Создание подвкладок для визуализации
+        self._create_visualization_tabs()
+        
+        # Вкладка "Статус системы"
+        self.status_frame = ttk.Frame(self.plots_notebook)
+        self.plots_notebook.add(self.status_frame, text="⚡ Статус системы")
+        
+        # Создание панели статуса
+        self._create_status_panel()
+        
+        # Упаковка notebook
+        self.plots_notebook.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
+    
+    def _create_control_panel(self):
+        """Создает контрольную панель"""
+        # Создание панели управления
+        self.control_panel = ControlPanel(self, self.control_frame, self.config)
+        
+        # Добавляем дополнительные элементы управления
+        control_frame = ttk.Frame(self.control_frame)
+        control_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Кнопки управления симуляцией
+        sim_frame = ttk.LabelFrame(control_frame, text="Управление симуляцией")
+        sim_frame.pack(fill=tk.X, pady=5)
+        
+        button_frame = ttk.Frame(sim_frame)
+        button_frame.pack(fill=tk.X, padx=5, pady=5)
+        
+        # Кнопка создания сети
+        create_network_btn = ttk.Button(button_frame, text="Создать сеть", 
+                                       command=self._create_network)
+        create_network_btn.pack(side=tk.LEFT, padx=5)
+        
+        # Кнопка загрузки сети
+        load_network_btn = ttk.Button(button_frame, text="Загрузить сеть", 
+                                     command=self._load_network)
+        load_network_btn.pack(side=tk.LEFT, padx=5)
+        
+        # Кнопка сохранения сети
+        save_network_btn = ttk.Button(button_frame, text="Сохранить сеть", 
+                                     command=self._save_network)
+        save_network_btn.pack(side=tk.LEFT, padx=5)
+    
+    def _create_visualization_tabs(self):
+        """Создает вкладки визуализации"""
+        # Создание внутреннего notebook для визуализации
+        self.viz_notebook = ttk.Notebook(self.visualization_frame)
+        self.viz_notebook.pack(fill=tk.BOTH, expand=True)
+        
         # Вкладка "Метрики в реальном времени"
-        self.metrics_frame = ttk.Frame(self.plots_notebook)
-        self.plots_notebook.add(self.metrics_frame, text="Метрики")
+        self.metrics_frame = ttk.Frame(self.viz_notebook)
+        self.viz_notebook.add(self.metrics_frame, text="📈 Метрики")
         
         # Создание графиков метрик
         self._create_metrics_plots()
         
-        # Вкладка "Топология сети" - перемещаем NetworkViewer сюда
-        self.topology_frame = ttk.Frame(self.plots_notebook)
-        self.plots_notebook.add(self.topology_frame, text="Топология")
+        # Вкладка "Топология сети"
+        self.topology_frame = ttk.Frame(self.viz_notebook)
+        self.viz_notebook.add(self.topology_frame, text="🕸️ Топология")
         
-        # Создание визуализатора сети в вкладке топологии
+        # Создание визуализатора сети
         self.network_viewer = NetworkViewer(self, self.topology_frame)
         
         # Вкладка "Анализ надежности"
-        self.reliability_frame = ttk.Frame(self.plots_notebook)
-        self.plots_notebook.add(self.reliability_frame, text="Надежность")
+        self.reliability_frame = ttk.Frame(self.viz_notebook)
+        self.viz_notebook.add(self.reliability_frame, text="🛡️ Надежность")
+        
+        # Создание графика надежности
+        self._create_reliability_plot()
         
         # Вкладка "События отказов"
-        self.failures_frame = ttk.Frame(self.plots_notebook)
-        self.plots_notebook.add(self.failures_frame, text="Отказы")
+        self.failures_frame = ttk.Frame(self.viz_notebook)
+        self.viz_notebook.add(self.failures_frame, text="⚠️ Отказы")
         
-        # Упаковка notebook
-        self.plots_notebook.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
+        # Создание графика отказов
+        self._create_failures_plot()
+    
+    def _create_status_panel(self):
+        """Создает панель статуса системы"""
+        # Основной фрейм
+        main_frame = ttk.Frame(self.status_frame)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Статус симуляции
+        sim_status_frame = ttk.LabelFrame(main_frame, text="Статус симуляции")
+        sim_status_frame.pack(fill=tk.X, pady=5)
+        
+        self.sim_status_var = tk.StringVar(value="Остановлено")
+        status_label = ttk.Label(sim_status_frame, textvariable=self.sim_status_var, 
+                                font=("Arial", 12, "bold"))
+        status_label.pack(pady=5)
+        
+        # Информация о сети
+        network_info_frame = ttk.LabelFrame(main_frame, text="Информация о сети")
+        network_info_frame.pack(fill=tk.X, pady=5)
+        
+        self.network_info_text = tk.Text(network_info_frame, height=10, width=80)
+        self.network_info_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Метрики производительности
+        metrics_frame = ttk.LabelFrame(main_frame, text="Метрики производительности")
+        metrics_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        # Создание панели метрик
+        self.metrics_panel = MetricsPanel(self)
+        self.metrics_panel.frame.pack(in_=metrics_frame, fill=tk.BOTH, expand=True, padx=5, pady=5)
+    
+    def _create_reliability_plot(self):
+        """Создает график надежности системы"""
+        # Создание фигуры для графика надежности
+        self.reliability_fig = Figure(figsize=(10, 6), dpi=100, 
+                                     facecolor=self.theme.COLORS['bg_primary'])
+        self.reliability_ax = self.reliability_fig.add_subplot(111)
+        
+        # Настройка графика
+        self.reliability_ax.set_title("НАДЕЖНОСТЬ СИСТЕМЫ", 
+                                     color=self.theme.COLORS['text_secondary'],
+                                     fontweight='bold', fontsize=14)
+        self.reliability_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
+        self.reliability_ax.set_ylabel("Надежность", color=self.theme.COLORS['text_primary'])
+        self.reliability_ax.grid(True, alpha=0.3)
+        self.reliability_ax.set_ylim(0, 1)
+        
+        # Инициализация линии графика
+        self.reliability_line, = self.reliability_ax.plot([], [], 
+                                                         color=self.theme.COLORS['success'],
+                                                         linewidth=2, label='Надежность')
+        
+        # Легенда
+        self.reliability_ax.legend()
+        
+        # Создание canvas
+        self.reliability_canvas = FigureCanvasTkAgg(self.reliability_fig, self.reliability_frame)
+        self.reliability_canvas.draw()
+        self.reliability_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        
+        # Данные для графика
+        self.reliability_time_data = []
+        self.reliability_value_data = []
+    
+    def _create_failures_plot(self):
+        """Создает график событий отказов"""
+        # Создание фигуры для графика отказов
+        self.failures_fig = Figure(figsize=(10, 6), dpi=100, 
+                                  facecolor=self.theme.COLORS['bg_primary'])
+        self.failures_ax = self.failures_fig.add_subplot(111)
+        
+        # Настройка графика
+        self.failures_ax.set_title("СОБЫТИЯ ОТКАЗОВ", 
+                                  color=self.theme.COLORS['text_secondary'],
+                                  fontweight='bold', fontsize=14)
+        self.failures_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
+        self.failures_ax.set_ylabel("Количество отказов", color=self.theme.COLORS['text_primary'])
+        self.failures_ax.grid(True, alpha=0.3)
+        
+        # Инициализация линии графика
+        self.failures_line, = self.failures_ax.plot([], [], 
+                                                   color=self.theme.COLORS['danger'],
+                                                   linewidth=2, label='Отказы')
+        
+        # Легенда
+        self.failures_ax.legend()
+        
+        # Создание canvas
+        self.failures_canvas = FigureCanvasTkAgg(self.failures_fig, self.failures_frame)
+        self.failures_canvas.draw()
+        self.failures_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        
+        # Данные для графика
+        self.failures_time_data = []
+        self.failures_count_data = []
     
     def _create_metrics_plots(self):
         """Создает графики метрик"""
@@ -209,44 +373,43 @@ class MainWindow:
         self.metrics_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
     
     def _create_layout(self):
-        """Создает компоновку интерфейса"""
-        # Панель управления (сверху)
-        self.control_panel.frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
-        
-        # Основная область (по центру)
+        """Создает компоновку интерфейса с пагинацией"""
+        # Основная область с пагинацией (занимает все окно)
         main_frame = ttk.Frame(self.root)
-        main_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5, pady=5)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        # Левая панель (панель метрик)
-        left_panel = ttk.Frame(main_frame)
-        left_panel.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 5))
+        # Создание области с пагинацией
+        self._create_plots_area(main_frame)
         
-        self.metrics_panel.frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Правая панель (графики и визуализация)
-        right_panel = ttk.Frame(main_frame)
-        right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-        
-        # Создание notebook для графиков
-        self._create_plots_area(right_panel)
-        
-        # Статусная строка (снизу)
-        self.status_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=5)
+        # Панель статуса уже создана в _create_widgets()
     
     def _apply_military_styling(self):
         """Применяет военный стиль к интерфейсу"""
         # Настройка цветов для всех основных фреймов
-        self._style_frame(self.control_panel.frame)
-        self._style_frame(self.metrics_panel.frame)
-        self._style_frame(self.network_viewer.frame)
+        if hasattr(self, 'control_panel') and self.control_panel:
+            self._style_frame(self.control_panel.frame)
+        if hasattr(self, 'metrics_panel') and self.metrics_panel:
+            self._style_frame(self.metrics_panel.frame)
+        if hasattr(self, 'network_viewer') and self.network_viewer:
+            self._style_frame(self.network_viewer.frame)
         
         # Добавление военных элементов
         self._add_military_elements()
     
     def _style_frame(self, frame):
         """Стилизует фрейм в военном стиле"""
-        frame.configure(bg=self.theme.COLORS['bg_secondary'])
-        self.theme.add_border_effect(frame)
+        try:
+            # Для обычных tk.Frame
+            if hasattr(frame, 'configure') and 'bg' in frame.configure():
+                frame.configure(bg=self.theme.COLORS['bg_secondary'])
+            # Для ttk.Frame используем стиль
+            elif hasattr(frame, 'configure'):
+                # ttk.Frame не поддерживает bg напрямую
+                pass
+            self.theme.add_border_effect(frame)
+        except Exception:
+            # Если стилизация не удается, пропускаем
+            pass
     
     def _add_military_elements(self):
         """Добавляет военные элементы интерфейса"""
@@ -338,15 +501,42 @@ class MainWindow:
     
     def stop_simulation(self):
         """Останавливает симуляцию"""
-        if not self.is_simulation_running or not self.simulator:
-            return
-        
-        self.simulator.stop_simulation()
-        self.is_simulation_running = False
-        
-        # Обновление интерфейса
-        self.control_panel.set_simulation_state(False)
-        self.status_var.set("╔═══ СИМУЛЯЦИЯ ОСТАНОВЛЕНА ═══╗")
+        try:
+            print("[DEBUG] MainWindow.stop_simulation вызван")
+            
+            # Останавливаем симулятор, если он есть
+            if hasattr(self, 'simulator') and self.simulator:
+                print("[DEBUG] Останавливаем симулятор...")
+                self.simulator.stop_simulation()
+                
+                # Логируем остановку симуляции
+                current_network = self.network_viewer.network
+                if current_network:
+                    network_id = getattr(current_network, 'id', 0)
+                    self.program_state_manager.log_simulation_stopped(network_id, current_network.name)
+                    print(f"[DEBUG] Логируем остановку симуляции для сети {current_network.name}")
+            else:
+                print("[DEBUG] Симулятор не найден или не инициализирован")
+            
+            # Останавливаем программу через ProgramStateManager
+            print("[DEBUG] Останавливаем программу через ProgramStateManager...")
+            self.program_state_manager.stop_program()
+            
+            # Обновляем локальное состояние
+            self.is_simulation_running = False
+            print("[DEBUG] Локальное состояние обновлено")
+            
+            # Обновление интерфейса
+            if hasattr(self, 'control_panel'):
+                self.control_panel.set_simulation_state(False)
+                print("[DEBUG] Интерфейс обновлен")
+            
+            print("[DEBUG] Симуляция успешно остановлена")
+            messagebox.showinfo("Информация", "Симуляция остановлена")
+            
+        except Exception as e:
+            print(f"[ERROR] Ошибка при остановке симуляции: {e}")
+            messagebox.showerror("Ошибка", f"Ошибка при остановке симуляции: {str(e)}")
     
     def _add_default_adverse_conditions(self):
         """Добавляет стандартные неблагоприятные условия"""
@@ -418,13 +608,13 @@ class MainWindow:
             if len(history) > 1:
                 times = [m.timestamp for m in history]
                 
-                # Обновление графиков
+                # Обновление основных графиков метрик
                 self.throughput_line.set_data(times, [m.throughput for m in history])
                 self.latency_line.set_data(times, [m.latency for m in history])
                 self.reliability_line.set_data(times, [m.reliability for m in history])
                 self.availability_line.set_data(times, [m.availability for m in history])
                 
-                # Автомасштабирование
+                # Автомасштабирование основных графиков
                 self.throughput_ax.relim()
                 self.throughput_ax.autoscale_view()
                 self.latency_ax.relim()
@@ -434,8 +624,403 @@ class MainWindow:
                 self.availability_ax.relim()
                 self.availability_ax.autoscale_view()
                 
-                # Перерисовка
+                # Перерисовка основных графиков
                 self.metrics_canvas.draw_idle()
+                
+                # Обновление графика надежности в отдельной вкладке
+                self._update_reliability_plot(history)
+                
+                # Обновление графика отказов
+                self._update_failures_plot()
+                
+                # Обновление статуса системы
+                self._update_system_status()
+    
+    def _update_reliability_plot(self, history):
+        """Обновляет график надежности"""
+        if not history:
+            return
+            
+        times = [m.timestamp for m in history]
+        reliability_values = [m.reliability for m in history]
+        
+        # Обновление данных графика
+        self.reliability_time_data = times
+        self.reliability_value_data = reliability_values
+        
+        # Обновление линии графика
+        self.reliability_line.set_data(times, reliability_values)
+        
+        # Автомасштабирование
+        self.reliability_ax.relim()
+        self.reliability_ax.autoscale_view()
+        
+        # Перерисовка
+        self.reliability_canvas.draw_idle()
+    
+    def _update_failures_plot(self):
+        """Обновляет график событий отказов"""
+        if not self.simulator:
+            return
+            
+        # Получение событий отказов
+        failure_events = self.simulator.get_failure_events()
+        
+        if failure_events:
+            # Группировка отказов по времени
+            time_counts = {}
+            for event in failure_events:
+                time_bucket = int(event['timestamp'] // 10) * 10  # 10-секундные интервалы
+                time_counts[time_bucket] = time_counts.get(time_bucket, 0) + 1
+            
+            times = sorted(time_counts.keys())
+            counts = [time_counts[t] for t in times]
+            
+            # Обновление данных графика
+            self.failures_time_data = times
+            self.failures_count_data = counts
+            
+            # Обновление линии графика
+            self.failures_line.set_data(times, counts)
+            
+            # Автомасштабирование
+            self.failures_ax.relim()
+            self.failures_ax.autoscale_view()
+            
+            # Перерисовка
+            self.failures_canvas.draw_idle()
+    
+    def _update_system_status(self):
+        """Обновляет статус системы"""
+        if not self.simulator:
+            return
+            
+        # Обновление статуса симуляции
+        if self.simulator.is_running:
+            self.sim_status_var.set("Выполняется")
+        elif self.simulator.is_paused:
+            self.sim_status_var.set("Приостановлено")
+        else:
+            self.sim_status_var.set("Остановлено")
+        
+        # Обновление информации о сети
+        if hasattr(self.simulator, 'network') and self.simulator.network:
+            network_info = self.simulator.network.get_network_summary()
+            self.network_info_text.delete(1.0, tk.END)
+            self.network_info_text.insert(1.0, network_info)
+        
+        # Обновление панели метрик
+        if hasattr(self.simulator, 'performance_metrics'):
+            current_metrics = self.simulator.performance_metrics.current_metrics
+            if hasattr(current_metrics, 'throughput'):
+                from ..models.performance_metrics import MetricsSnapshot
+                snapshot = MetricsSnapshot(
+                    timestamp=self.simulator.current_time,
+                    throughput=current_metrics.get('throughput', 0),
+                    latency=current_metrics.get('latency', 0),
+                    reliability=current_metrics.get('reliability', 0),
+                    availability=current_metrics.get('availability', 0),
+                    packet_loss=current_metrics.get('packet_loss', 0),
+                    jitter=current_metrics.get('jitter', 0),
+                    energy_efficiency=current_metrics.get('energy_efficiency', 0)
+                )
+                self.metrics_panel.update_metrics(snapshot)
+    
+    def _create_network(self):
+        """Создает новую сеть"""
+        dialog = NetworkDialog(self.root, self.db_manager)
+        if dialog.result:
+            # Создание сети с заданными параметрами
+            from ..system_model import SystemModel, Node, NodeType, Link, LinkType
+            import random
+            
+            network = SystemModel("Новая сеть")
+            
+            # Создание узлов
+            for i in range(dialog.result.get('nodes', 10)):
+                node_type = random.choice(list(NodeType))
+                node = Node(
+                    id=f"node_{i}",
+                    node_type=node_type,
+                    capacity=random.uniform(100, 1000),
+                    reliability=random.uniform(0.85, 0.99),
+                    x=random.uniform(0, 100),
+                    y=random.uniform(0, 100),
+                    threat_level=random.uniform(0.1, 0.3),
+                    load=random.uniform(0.2, 0.8)
+                )
+                network.add_node(node)
+            
+            # Создание связей
+            nodes = list(network.nodes.keys())
+            connection_prob = dialog.result.get('connection_prob', 0.3)
+            
+            for i, source in enumerate(nodes):
+                for j, target in enumerate(nodes[i+1:], i+1):
+                    if random.random() < connection_prob:
+                        link = Link(
+                            source=source,
+                            target=target,
+                            bandwidth=random.uniform(10, 100),
+                            latency=random.uniform(1, 50),
+                            reliability=random.uniform(0.90, 0.99),
+                            link_type=random.choice(list(LinkType)),
+                            threat_level=random.uniform(0.05, 0.2),
+                            load=random.uniform(0.1, 0.6)
+                        )
+                        network.add_link(link)
+            
+            # Обновление визуализатора сети
+            self.network_viewer.update_network(network)
+            
+            # Создание симулятора для новой сети
+            analysis_time = dialog.result.get('analysis_time', 300)  # 5 минут по умолчанию
+            self._create_simulator_for_network(network, analysis_time)
+            
+            # Логируем создание сети
+            self.program_state_manager.log_network_created(0, network.name)  # ID будет обновлен при сохранении
+            
+            messagebox.showinfo("Успех", f"Создана сеть с {len(network.nodes)} узлами и {len(network.links)} связями\nВремя анализа: {analysis_time} сек ({analysis_time/60:.1f} мин)")
+    
+    def _load_network(self):
+        """Загружает сеть из базы данных"""
+        from .network_selection_dialog import NetworkSelectionDialog
+        
+        # Открываем диалог выбора сети
+        dialog = NetworkSelectionDialog(self.root, self.db_manager, self)
+        result = dialog.show()
+        
+        if result and result['action'] == 'load':
+            try:
+                network_data = result['network_data']['network_data']
+                
+                # Создание сети из данных
+                from ..system_model import SystemModel, Node, NodeType, Link, LinkType
+                
+                network = SystemModel(result['network_name'])
+                
+                # Загрузка узлов (конвертируем из NetworkNode в Node)
+                for node_data in network_data.get('nodes', []):
+                    # NetworkNode имеет поля: id, x, y, capacity, reliability, processing_delay
+                    # Node имеет поля: id, node_type, capacity, reliability, cpu_load, memory_usage, load, threat_level, encryption, x, y
+                    
+                    # Безопасная конвертация типов
+                    try:
+                        node_id = f"node_{node_data['id']}"  # Конвертируем int в string
+                        capacity = float(node_data['capacity'])
+                        reliability = float(node_data['reliability'])
+                        x = float(node_data.get('x', 0.0))
+                        y = float(node_data.get('y', 0.0))
+                    except (ValueError, TypeError, KeyError) as e:
+                        print(f"[WARNING] Ошибка конвертации данных узла: {e}")
+                        continue  # Пропускаем проблемный узел
+                    
+                    node = Node(
+                        id=node_id,
+                        node_type=NodeType.SERVER,  # По умолчанию SERVER
+                        capacity=capacity,
+                        reliability=reliability,
+                        cpu_load=0.0,  # По умолчанию
+                        memory_usage=0.0,  # По умолчанию
+                        load=0.0,  # По умолчанию
+                        threat_level=0.1,  # По умолчанию
+                        encryption=True,  # По умолчанию
+                        x=x,
+                        y=y
+                    )
+                    network.add_node(node)
+                
+                # Загрузка связей (конвертируем из NetworkLink в Link)
+                for link_data in network_data.get('links', []):
+                    # NetworkLink имеет поля: source, target, bandwidth, latency, reliability, distance
+                    # Link имеет поля: source, target, bandwidth, latency, reliability, link_type, utilization, load, encryption, threat_level
+                    
+                    # Безопасная конвертация типов
+                    try:
+                        source_id = int(link_data['source'])
+                        target_id = int(link_data['target'])
+                        bandwidth = float(link_data['bandwidth'])
+                        latency = float(link_data['latency'])
+                        reliability = float(link_data['reliability'])
+                        
+                        source = f"node_{source_id}"  # Конвертируем source в string
+                        target = f"node_{target_id}"  # Конвертируем target в string
+                    except (ValueError, TypeError, KeyError) as e:
+                        print(f"[WARNING] Ошибка конвертации данных связи: {e}")
+                        continue  # Пропускаем проблемную связь
+                    
+                    link = Link(
+                        source=source,
+                        target=target,
+                        bandwidth=bandwidth,
+                        latency=latency,
+                        reliability=reliability,
+                        link_type=LinkType.ETHERNET,  # По умолчанию ETHERNET
+                        utilization=0.0,  # По умолчанию
+                        load=0.0,  # По умолчанию
+                        encryption=True,  # По умолчанию
+                        threat_level=0.1  # По умолчанию
+                    )
+                    network.add_link(link)
+                
+                # Обновление визуализатора сети
+                self.network_viewer.update_network(network)
+                
+                # Создание симулятора для загруженной сети
+                analysis_time = result.get('analysis_time', 300)  # 5 минут по умолчанию
+                self._create_simulator_for_network(network, analysis_time)
+                
+                # Логируем загрузку сети
+                network_id = result['network_data']['id']
+                self.program_state_manager.log_network_created(network_id, network.name)
+                
+                messagebox.showinfo("Успех", f"Загружена сеть: {network.name}\nВремя анализа: {analysis_time} сек ({analysis_time/60:.1f} мин)")
+                
+            except Exception as e:
+                messagebox.showerror("Ошибка", f"Не удалось загрузить сеть: {str(e)}")
+    
+    def _save_network(self):
+        """Сохраняет текущую сеть в базу данных"""
+        if not hasattr(self, 'network_viewer') or not self.network_viewer.network:
+            messagebox.showwarning("Предупреждение", "Нет сети для сохранения")
+            return
+        
+        try:
+            network = self.network_viewer.network
+            
+            # Запрашиваем название сети
+            from tkinter import simpledialog
+            network_name = simpledialog.askstring(
+                "Сохранение сети",
+                "Введите название сети:",
+                initialvalue=network.name
+            )
+            
+            if not network_name:
+                return  # Пользователь отменил
+            
+            # Запрашиваем описание (опционально)
+            description = simpledialog.askstring(
+                "Сохранение сети",
+                "Введите описание сети (необязательно):",
+                initialvalue=""
+            )
+            
+            # Конвертируем SystemModel в NetworkModel для сохранения
+            from ..models.network_model import NetworkModel
+            
+            # Создаем NetworkModel из SystemModel
+            network_model = NetworkModel(nodes=0, connection_probability=0)
+            network_model.name = network_name
+            network_model.description = description or ""
+            
+            # Добавляем узлы
+            for node_id, node in network.nodes.items():
+                from ..models.network_model import NetworkNode
+                network_node = NetworkNode(
+                    id=int(node.id.split('_')[1]) if '_' in node.id else 0,
+                    x=node.x,
+                    y=node.y,
+                    capacity=node.capacity,
+                    reliability=node.reliability,
+                    processing_delay=0.1  # По умолчанию
+                )
+                network_model.nodes.append(network_node)
+            
+            # Добавляем связи
+            for (source, target), link in network.links.items():
+                from ..models.network_model import NetworkLink
+                source_id = int(source.split('_')[1]) if '_' in source else 0
+                target_id = int(target.split('_')[1]) if '_' in target else 0
+                
+                network_link = NetworkLink(
+                    source=source_id,
+                    target=target_id,
+                    bandwidth=link.bandwidth,
+                    latency=link.latency,
+                    reliability=link.reliability,
+                    distance=10.0  # По умолчанию
+                )
+                network_model.links.append(network_link)
+            
+            # Сохраняем в базу данных
+            network_id = self.db_manager.save_network(network_model, network_name, description or "")
+            
+            messagebox.showinfo("Успех", f"Сеть '{network_name}' сохранена в базе данных (ID: {network_id})")
+            
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Не удалось сохранить сеть: {str(e)}")
+    
+    def create_system(self):
+        """Создает новую систему"""
+        self._create_network()
+    
+    def start_simulation(self):
+        """Запускает симуляцию"""
+        if hasattr(self, 'simulator') and self.simulator:
+            if not self.simulator.is_running:
+                # Запускаем программу
+                self.program_state_manager.start_program()
+                
+                # Запускаем симуляцию
+                self.simulator.start_simulation()
+                
+                # Логируем запуск симуляции
+                current_network = self.network_viewer.network
+                if current_network:
+                    network_id = getattr(current_network, 'id', 0)
+                    self.program_state_manager.log_simulation_started(network_id, current_network.name)
+                
+                # Обновляем локальное состояние
+                self.is_simulation_running = True
+                
+                messagebox.showinfo("Информация", "Симуляция запущена")
+            else:
+                messagebox.showwarning("Предупреждение", "Симуляция уже выполняется")
+        else:
+            messagebox.showwarning("Предупреждение", "Сначала создайте или загрузите сеть")
+    
+    def _create_simulator_for_network(self, network, analysis_time=300):
+        """Создает симулятор для сети"""
+        try:
+            # Создаем конфигурацию симуляции
+            from ..simulator.network_simulator import SimulationConfig
+            
+            config = SimulationConfig(
+                duration=float(analysis_time),  # Используем время анализа из диалога
+                time_step=0.5,
+                enable_traffic=True,
+                enable_failures=True,
+                enable_adverse_conditions=True
+            )
+            
+            print(f"[INFO] Создан симулятор с временем анализа: {analysis_time} секунд ({analysis_time/60:.1f} минут)")
+            
+            # Создаем симулятор
+            self.simulator = NetworkSimulator(config)
+            
+            # Инициализируем симулятор с сетью
+            # Конвертируем SystemModel в формат, понятный симулятору
+            node_count = len(network.nodes)
+            connection_prob = len(network.links) / (node_count * (node_count - 1) / 2) if node_count > 1 else 0
+            
+            self.simulator.initialize_network(node_count, connection_prob)
+            
+            # Добавляем callback для обновления графиков
+            self.simulator.add_update_callback(self._update_plots)
+            
+            print(f"[INFO] Симулятор создан для сети с {node_count} узлами")
+            
+        except Exception as e:
+            print(f"[ERROR] Ошибка создания симулятора: {e}")
+            # Создаем базовый симулятор без инициализации сети
+            try:
+                from ..simulator.network_simulator import SimulationConfig
+                config = SimulationConfig(duration=300.0, time_step=0.5)
+                self.simulator = NetworkSimulator(config)
+                print("[INFO] Базовый симулятор создан")
+            except Exception as e2:
+                print(f"[ERROR] Не удалось создать даже базовый симулятор: {e2}")
     
     def _show_simulation_results(self, results):
         """Показывает результаты симуляции"""
@@ -645,4 +1230,80 @@ class MainWindow:
         
         # Фокус на поле имени
         name_entry.focus_set()
+    
+    def _on_program_state_changed(self, state, status_info):
+        """Обработчик изменения состояния программы"""
+        # Обновляем панель управления
+        if hasattr(self, 'control_panel'):
+            self.control_panel._update_button_states()
+        
+        # Обновляем отображение статуса
+        self.update_status_display(status_info)
+        
+        print(f"[INFO] Состояние программы изменено: {status_info['state_display']}")
+    
+    def generate_report(self):
+        """Генерирует отчет в формате Word"""
+        try:
+            from ..reports.word_report_generator import WordReportGenerator
+            from tkinter import filedialog
+            
+            # Запрашиваем путь для сохранения
+            output_path = filedialog.asksaveasfilename(
+                title="Сохранить отчет",
+                defaultextension=".docx",
+                filetypes=[("Word документы", "*.docx"), ("Все файлы", "*.*")]
+            )
+            
+            if not output_path:
+                return  # Пользователь отменил
+            
+            # Генерируем отчет
+            report_generator = WordReportGenerator()
+            report_path = report_generator.create_report(
+                self.program_state_manager,
+                self.db_manager,
+                output_path
+            )
+            
+            messagebox.showinfo("Успех", f"Отчет сохранен: {report_path}")
+            
+        except ImportError:
+            messagebox.showerror("Ошибка", "Модуль python-docx не установлен.\nУстановите: pip install python-docx")
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Не удалось создать отчет: {str(e)}")
+    
+    def _reset_simulation(self):
+        """Сбрасывает симуляцию"""
+        try:
+            # Останавливаем текущую симуляцию
+            if self.simulator:
+                self.simulator.stop_simulation()
+            
+            # Сбрасываем состояние программы
+            self.program_state_manager.stop_program()
+            
+            # Сбрасываем интерфейс
+            self.is_simulation_running = False
+            if hasattr(self, 'control_panel'):
+                self.control_panel.set_simulation_state(False)
+            
+            # Очищаем графики
+            if hasattr(self, 'metrics_panel'):
+                self.metrics_panel.reset_metrics()
+            
+            messagebox.showinfo("Информация", "Симуляция сброшена")
+            
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Ошибка при сбросе симуляции: {str(e)}")
+    
+    def update_status_display(self, status_info):
+        """Обновляет отображение статуса"""
+        if hasattr(self, 'status_var'):
+            state_display = status_info['state_display']
+            runtime = status_info['runtime_display']
+            current_network = status_info.get('current_network_name', 'Нет')
+            
+            status_text = f"╔═══ {state_display.upper()} ═══╗ | Время: {runtime} | Сеть: {current_network}"
+            self.status_var.set(status_text)
 
