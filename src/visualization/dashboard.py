@@ -44,7 +44,7 @@ class Dashboard:
         self._plot_reliability_availability(ax4, metrics_history)
         
         # 5. Состояние сети (второй ряд, правая половина)
-        ax5 = fig.add_subplot(gs[1, 2:])
+        ax5 = fig.add_subplot(gs[1, 2:4])  # Исправлено: ограничиваем до 4 колонок
         self._plot_network_status(ax5, network_metrics)
         
         # 6. Неблагоприятные условия (третий ряд, левая половина)
@@ -52,7 +52,7 @@ class Dashboard:
         self._plot_adverse_conditions(ax6, adverse_conditions)
         
         # 7. Анализ трафика (третий ряд, правая половина)
-        ax7 = fig.add_subplot(gs[2, 2:])
+        ax7 = fig.add_subplot(gs[2, 2:4])  # Исправлено: ограничиваем до 4 колонок
         self._plot_traffic_analysis(ax7, traffic_analysis)
         
         # 8. Статистика производительности (четвертый ряд, левая половина)
@@ -60,7 +60,7 @@ class Dashboard:
         self._plot_performance_stats(ax8, metrics_history)
         
         # 9. Рекомендации (четвертый ряд, правая половина)
-        ax9 = fig.add_subplot(gs[3, 2:])
+        ax9 = fig.add_subplot(gs[3, 2:4])  # Исправлено: ограничиваем до 4 колонок
         self._plot_recommendations(ax9, metrics_history, network_metrics)
         
         plt.suptitle('Дашборд анализа ИКС в неблагоприятных условиях', 
@@ -320,6 +320,8 @@ class Dashboard:
         
         # Скрытие оси X
         ax.set_xticks([])
+
+
 
 
 
