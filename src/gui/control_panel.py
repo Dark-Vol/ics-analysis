@@ -11,14 +11,16 @@ from .themes.blood_angels_theme import BloodAngelsTheme
 class ControlPanel:
     """Панель управления симуляцией в стиле Кровавых Ангелов"""
     
-    def __init__(self, parent, config):
+    def __init__(self, parent, frame, config):
         self.parent = parent
+        self.frame = frame
         self.config = config
         self.theme = BloodAngelsTheme()
         
-        # Создание фрейма в военном стиле
-        self.frame = self.theme.create_military_frame(parent.root, 
-                                                   title="КОНТРОЛЬНЫЙ ПАНЕЛЬ")
+        # Создание фрейма в военном стиле (если frame не предоставлен)
+        if not self.frame:
+            self.frame = self.theme.create_military_frame(parent, 
+                                                       title="КОНТРОЛЬНЫЙ ПАНЕЛЬ")
         
         # Переменные
         self._create_variables()
@@ -150,6 +152,13 @@ class ControlPanel:
                                      style='BloodAngels.TButton')
         self.pause_button.pack(side=tk.LEFT, padx=5)
         
+        # Кнопка продолжения
+        self.resume_button = ttk.Button(button_frame, text="╔═══ ПРОДОЛЖИТЬ ═══╗", 
+                                       command=self._resume_simulation, 
+                                       state=tk.DISABLED,
+                                       style='BloodAngels.TButton')
+        self.resume_button.pack(side=tk.LEFT, padx=5)
+        
         # Кнопка остановки
         self.stop_button = ttk.Button(button_frame, text="╔═══ СТОП ═══╗", 
                                     command=self._stop_simulation, 
@@ -162,6 +171,12 @@ class ControlPanel:
                                 command=self._reset_simulation,
                                 style='BloodAngels.TButton')
         reset_button.pack(side=tk.RIGHT, padx=(5, 0))
+        
+        # Кнопка генерации отчета
+        report_button = ttk.Button(button_frame, text="╔═══ ОТЧЕТ ═══╗", 
+                                  command=self._generate_report,
+                                  style='BloodAngels.TButton')
+        report_button.pack(side=tk.RIGHT, padx=(5, 0))
     
     def _load_defaults(self):
         """Загружает значения по умолчанию из конфигурации"""
@@ -181,34 +196,70 @@ class ControlPanel:
     
     def _pause_simulation(self):
         """Приостанавливает симуляцию"""
-        if self.simulation_state:
-            if hasattr(self.parent, 'simulator') and self.parent.simulator:
-                self.parent.simulator.pause_simulation()
-            self.pause_button.config(text="Возобновить")
-        else:
-            if hasattr(self.parent, 'simulator') and self.parent.simulator:
-                self.parent.simulator.resume_simulation()
-            self.pause_button.config(text="Пауза")
+        if hasattr(self.parent, 'program_state_manager'):
+            self.parent.program_state_manager.pause_program()
+            self._update_button_states()
+    
+    def _resume_simulation(self):
+        """Возобновляет симуляцию"""
+        if hasattr(self.parent, 'program_state_manager'):
+            self.parent.program_state_manager.resume_program()
+            self._update_button_states()
     
     def _stop_simulation(self):
         """Останавливает симуляцию"""
-        self.parent.stop_simulation()
+        if hasattr(self.parent, 'stop_simulation'):
+            self.parent.stop_simulation()
+        elif hasattr(self.parent, 'program_state_manager'):
+            self.parent.program_state_manager.stop_program()
+            self._update_button_states()
     
     def _reset_simulation(self):
         """Сбрасывает симуляцию"""
-        self.parent._new_simulation()
+        if hasattr(self.parent, '_reset_simulation'):
+            self.parent._reset_simulation()
+    
+    def _generate_report(self):
+        """Генерирует отчет в Word"""
+        if hasattr(self.parent, 'generate_report'):
+            self.parent.generate_report()
     
     def set_simulation_state(self, is_running):
         """Устанавливает состояние симуляции"""
         self.simulation_state = is_running
+        self._update_button_states()
+    
+    def _update_button_states(self):
+        """Обновляет состояния кнопок в зависимости от состояния программы"""
+        if not hasattr(self.parent, 'program_state_manager'):
+            return
         
-        if is_running:
+        state_manager = self.parent.program_state_manager
+        state = state_manager.state.value
+        
+        if state == 'running':
+            # Программа запущена
             self.start_button.config(state=tk.DISABLED)
             self.pause_button.config(state=tk.NORMAL)
+            self.resume_button.config(state=tk.DISABLED)
             self.stop_button.config(state=tk.NORMAL)
-        else:
+        elif state == 'paused':
+            # Программа на паузе
+            self.start_button.config(state=tk.DISABLED)
+            self.pause_button.config(state=tk.DISABLED)
+            self.resume_button.config(state=tk.NORMAL)
+            self.stop_button.config(state=tk.NORMAL)
+        elif state == 'stopped':
+            # Программа остановлена
             self.start_button.config(state=tk.NORMAL)
-            self.pause_button.config(state=tk.DISABLED, text="Пауза")
+            self.pause_button.config(state=tk.DISABLED)
+            self.resume_button.config(state=tk.DISABLED)
+            self.stop_button.config(state=tk.DISABLED)
+        else:
+            # Неизвестное состояние
+            self.start_button.config(state=tk.NORMAL)
+            self.pause_button.config(state=tk.DISABLED)
+            self.resume_button.config(state=tk.DISABLED)
             self.stop_button.config(state=tk.DISABLED)
     
     def reset_to_defaults(self):
