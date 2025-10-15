@@ -97,9 +97,20 @@ class NetworkSimulator:
     
     def stop_simulation(self):
         """Останавливает симуляцию"""
+        print("[DEBUG] Останавливаем симуляцию...")
         self.is_running = False
-        if self.simulation_thread:
-            self.simulation_thread.join(timeout=1.0)
+        self.is_paused = False  # Снимаем паузу при остановке
+        
+        if self.simulation_thread and self.simulation_thread.is_alive():
+            print("[DEBUG] Ждем завершения потока симуляции...")
+            self.simulation_thread.join(timeout=2.0)
+            
+            if self.simulation_thread.is_alive():
+                print("[WARNING] Поток симуляции не завершился за 2 секунды")
+            else:
+                print("[DEBUG] Поток симуляции успешно завершен")
+        
+        print("[DEBUG] Симуляция остановлена")
     
     def _simulation_loop(self):
         """Основной цикл симуляции"""
@@ -347,6 +358,9 @@ class NetworkSimulator:
     def get_failure_events(self) -> List[Dict]:
         """Получает события отказов"""
         return self.failure_events.copy()
+
+
+
 
 
 
