@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import numpy as np
 from typing import Optional, Callable
-from ..models.network_model import NetworkModel
+from ..models.network_model import NetworkModel, NetworkNode, NetworkLink
 from ..database.database_manager import DatabaseManager
 from .themes.blood_angels_theme import BloodAngelsTheme
 from .network_details_window import NetworkDetailsWindow
@@ -88,6 +88,16 @@ class NetworkDialog:
         self.prob_label = tk.Label(params_frame, text="0.3")
         self.prob_label.grid(row=1, column=2, padx=(10, 0), pady=5)
         prob_scale.configure(command=lambda v: self.prob_label.configure(text=f"{float(v):.2f}"))
+        
+        # Время анализа сети
+        tk.Label(params_frame, text="Время анализа (сек):").grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.analysis_time_var = tk.IntVar(value=300)  # 5 минут по умолчанию
+        time_spinbox = ttk.Spinbox(params_frame, from_=30, to=3600, textvariable=self.analysis_time_var, width=10)
+        time_spinbox.grid(row=2, column=1, sticky=tk.W, padx=(10, 0), pady=5)
+        
+        # Подсказка для времени анализа
+        time_hint_label = tk.Label(params_frame, text="(30 сек - 1 час)", font=("Arial", 8), fg="gray")
+        time_hint_label.grid(row=2, column=2, padx=(10, 0), pady=5)
         
         # Настройки узлов
         nodes_frame = ttk.LabelFrame(new_frame, text="Настройки узлов", padding=10)
@@ -182,6 +192,7 @@ class NetworkDialog:
             # Получение параметров
             nodes_count = self.nodes_var.get()
             connection_prob = self.connection_prob_var.get()
+            analysis_time = self.analysis_time_var.get()
             
             # Парсинг диапазонов для узлов
             node_capacity_range = self._parse_range(self.node_capacity_var.get())
@@ -199,7 +210,7 @@ class NetworkDialog:
             )
             
             # Диалог сохранения
-            self._save_network_dialog(network)
+            self._save_network_dialog(network, analysis_time)
             
         except Exception as e:
             messagebox.showerror("Ошибка", f"Не удалось создать сеть: {str(e)}")
@@ -278,7 +289,7 @@ class NetworkDialog:
         
         return graph
     
-    def _save_network_dialog(self, network: NetworkModel):
+    def _save_network_dialog(self, network: NetworkModel, analysis_time: int = 300):
         """Показывает диалог сохранения сети"""
         save_dialog = tk.Toplevel(self.dialog)
         save_dialog.title("Сохранить сеть")
@@ -303,8 +314,13 @@ class NetworkDialog:
                 return
             
             try:
-                network_id = self.db_manager.save_network(network, name, desc_entry.get())
-                self.result = {'action': 'created', 'network': network, 'network_id': network_id}
+                network_id = self.db_manager.save_network(network, name, desc_entry.get(), analysis_time)
+                self.result = {
+                    'action': 'created', 
+                    'network': network, 
+                    'network_id': network_id,
+                    'analysis_time': analysis_time
+                }
                 save_dialog.destroy()
                 self.dialog.destroy()
             except Exception as e:
@@ -350,9 +366,19 @@ class NetworkDialog:
             item = self.networks_tree.item(selection[0])
             network_id = int(item['tags'][0])
             
-            network = self.db_manager.load_network(network_id)
-            if network:
-                self.result = {'action': 'loaded', 'network': network, 'network_id': network_id}
+            # Получаем данные сети с анализом времени
+            network_data = self.db_manager.get_network(network_id)
+            if network_data:
+                network = self.db_manager.load_network(network_id)
+                if network:
+                    # Используем сохраненное время анализа
+                    saved_analysis_time = network_data.get('analysis_time', 300)
+                    self.result = {
+                        'action': 'loaded', 
+                        'network': network, 
+                        'network_id': network_id,
+                        'analysis_time': saved_analysis_time
+                    }
                 self.dialog.destroy()
             else:
                 messagebox.showerror("Ошибка", "Не удалось загрузить сеть")
