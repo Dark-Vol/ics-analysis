@@ -1,0 +1,42 @@
+Сеть: complex_enterprise_network
+==================================================
+
+Узел 'central_server':
+  Связан с: web_server1, web_server2, database_server, backup_server
+
+Узел 'web_server1':
+  Связан с: database_server, cache_server
+
+Узел 'web_server2':
+  Связан с: database_server, cache_server
+
+Узел 'database_server':
+  Связан с: backup_server, replica_server
+
+Узел 'cache_server':
+  Нет связей
+
+Узел 'backup_server':
+  Нет связей
+
+Узел 'replica_server':
+  Нет связей
+
+Узел 'router_main':
+  Связан с: central_server, firewall
+
+Узел 'router_backup':
+  Связан с: central_server
+
+Узел 'firewall':
+  Связан с: central_server
+
+Узел 'client_station1':
+  Связан с: router_main
+
+Узел 'client_station2':
+  Связан с: router_main
+
+Узел 'client_station3':
+  Связан с: router_backup
+
