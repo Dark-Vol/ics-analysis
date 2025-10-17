@@ -75,7 +75,10 @@ class MainWindow:
         file_menu.add_command(label="Сохранить конфигурацию", command=self._save_config)
         file_menu.add_separator()
         file_menu.add_command(label="Создать/Загрузить сеть", command=self._open_network_dialog)
-        file_menu.add_command(label="Сохранить текущую сеть", command=self._save_current_network)
+        file_menu.add_command(label="Сохранить текущую сеть", command=self._save_network)
+        file_menu.add_separator()
+        file_menu.add_command(label="Управление локальными сетями", command=self._manage_local_networks)
+        file_menu.add_command(label="Сохранить в локальное хранилище", command=self._save_current_network_locally)
         file_menu.add_separator()
         file_menu.add_command(label="Экспорт результатов", command=self._export_results)
         file_menu.add_separator()
@@ -538,6 +541,82 @@ class MainWindow:
             print(f"[ERROR] Ошибка при остановке симуляции: {e}")
             messagebox.showerror("Ошибка", f"Ошибка при остановке симуляции: {str(e)}")
     
+    def pause_simulation(self):
+        """Приостанавливает симуляцию"""
+        try:
+            print("[DEBUG] MainWindow.pause_simulation вызван")
+            
+            # Приостанавливаем симулятор, если он есть
+            if hasattr(self, 'simulator') and self.simulator:
+                print("[DEBUG] Приостанавливаем симулятор...")
+                self.simulator.pause_simulation()
+                
+                # Логируем паузу симуляции
+                current_network = self.network_viewer.network
+                if current_network:
+                    network_id = getattr(current_network, 'id', 0)
+                    self.program_state_manager.log_simulation_stopped(network_id, current_network.name)
+                    print(f"[DEBUG] Логируем паузу симуляции для сети {current_network.name}")
+            else:
+                print("[DEBUG] Симулятор не найден или не инициализирован")
+            
+            # Приостанавливаем программу через ProgramStateManager
+            print("[DEBUG] Приостанавливаем программу через ProgramStateManager...")
+            self.program_state_manager.pause_program()
+            
+            # Обновляем локальное состояние
+            self.is_simulation_running = False
+            
+            # Обновление интерфейса
+            if hasattr(self, 'control_panel'):
+                self.control_panel.set_simulation_state(False)
+                print("[DEBUG] Интерфейс обновлен")
+            
+            print("[DEBUG] Симуляция успешно приостановлена")
+            messagebox.showinfo("Информация", "Симуляция приостановлена")
+            
+        except Exception as e:
+            print(f"[ERROR] Ошибка при приостановке симуляции: {e}")
+            messagebox.showerror("Ошибка", f"Ошибка при приостановке симуляции: {str(e)}")
+    
+    def resume_simulation(self):
+        """Возобновляет симуляцию"""
+        try:
+            print("[DEBUG] MainWindow.resume_simulation вызван")
+            
+            # Возобновляем симулятор, если он есть
+            if hasattr(self, 'simulator') and self.simulator:
+                print("[DEBUG] Возобновляем симулятор...")
+                self.simulator.resume_simulation()
+                
+                # Логируем возобновление симуляции
+                current_network = self.network_viewer.network
+                if current_network:
+                    network_id = getattr(current_network, 'id', 0)
+                    self.program_state_manager.log_simulation_started(network_id, current_network.name)
+                    print(f"[DEBUG] Логируем возобновление симуляции для сети {current_network.name}")
+            else:
+                print("[DEBUG] Симулятор не найден или не инициализирован")
+            
+            # Возобновляем программу через ProgramStateManager
+            print("[DEBUG] Возобновляем программу через ProgramStateManager...")
+            self.program_state_manager.resume_program()
+            
+            # Обновляем локальное состояние
+            self.is_simulation_running = True
+            
+            # Обновление интерфейса
+            if hasattr(self, 'control_panel'):
+                self.control_panel.set_simulation_state(True)
+                print("[DEBUG] Интерфейс обновлен")
+            
+            print("[DEBUG] Симуляция успешно возобновлена")
+            messagebox.showinfo("Информация", "Симуляция возобновлена")
+            
+        except Exception as e:
+            print(f"[ERROR] Ошибка при возобновлении симуляции: {e}")
+            messagebox.showerror("Ошибка", f"Ошибка при возобновлении симуляции: {str(e)}")
+    
     def _add_default_adverse_conditions(self):
         """Добавляет стандартные неблагоприятные условия"""
         if not self.simulator or not self.simulator.network:
@@ -893,7 +972,7 @@ class MainWindow:
             network_name = simpledialog.askstring(
                 "Сохранение сети",
                 "Введите название сети:",
-                initialvalue=network.name
+                initialvalue=getattr(network, 'name', '')
             )
             
             if not network_name:
@@ -903,53 +982,172 @@ class MainWindow:
             description = simpledialog.askstring(
                 "Сохранение сети",
                 "Введите описание сети (необязательно):",
-                initialvalue=""
+                initialvalue=getattr(network, 'description', '')
             )
             
-            # Конвертируем SystemModel в NetworkModel для сохранения
-            from ..models.network_model import NetworkModel
-            
-            # Создаем NetworkModel из SystemModel
-            network_model = NetworkModel(nodes=0, connection_probability=0)
-            network_model.name = network_name
-            network_model.description = description or ""
-            
-            # Добавляем узлы
-            for node_id, node in network.nodes.items():
-                from ..models.network_model import NetworkNode
-                network_node = NetworkNode(
-                    id=int(node.id.split('_')[1]) if '_' in node.id else 0,
-                    x=node.x,
-                    y=node.y,
-                    capacity=node.capacity,
-                    reliability=node.reliability,
-                    processing_delay=0.1  # По умолчанию
-                )
-                network_model.nodes.append(network_node)
-            
-            # Добавляем связи
-            for (source, target), link in network.links.items():
-                from ..models.network_model import NetworkLink
-                source_id = int(source.split('_')[1]) if '_' in source else 0
-                target_id = int(target.split('_')[1]) if '_' in target else 0
+            # Проверяем тип сети
+            if hasattr(network, 'nodes') and isinstance(network.nodes, list):
+                # Это NetworkModel - сохраняем напрямую
+                network_id = self.db_manager.save_network(network, network_name, description or "", 300)
+                messagebox.showinfo("Успех", f"Сеть '{network_name}' сохранена в базе данных (ID: {network_id})")
+            else:
+                # Это SystemModel - конвертируем в NetworkModel
+                from ..models.network_model import NetworkModel, NetworkNode, NetworkLink
                 
-                network_link = NetworkLink(
-                    source=source_id,
-                    target=target_id,
-                    bandwidth=link.bandwidth,
-                    latency=link.latency,
-                    reliability=link.reliability,
-                    distance=10.0  # По умолчанию
-                )
-                network_model.links.append(network_link)
-            
-            # Сохраняем в базу данных
-            network_id = self.db_manager.save_network(network_model, network_name, description or "")
-            
-            messagebox.showinfo("Успех", f"Сеть '{network_name}' сохранена в базе данных (ID: {network_id})")
+                # Создаем NetworkModel из SystemModel
+                network_model = NetworkModel(nodes=0, connection_probability=0)
+                network_model.name = network_name
+                network_model.description = description or ""
+                
+                # Добавляем узлы
+                for node_id, node in network.nodes.items():
+                    network_node = NetworkNode(
+                        id=int(node.id.split('_')[1]) if '_' in node.id else 0,
+                        x=node.x,
+                        y=node.y,
+                        capacity=node.capacity,
+                        reliability=node.reliability,
+                        processing_delay=0.1  # По умолчанию
+                    )
+                    network_model.nodes.append(network_node)
+                
+                # Добавляем связи
+                for (source, target), link in network.links.items():
+                    source_id = int(source.split('_')[1]) if '_' in source else 0
+                    target_id = int(target.split('_')[1]) if '_' in target else 0
+                    
+                    network_link = NetworkLink(
+                        source=source_id,
+                        target=target_id,
+                        bandwidth=link.bandwidth,
+                        latency=link.latency,
+                        reliability=link.reliability,
+                        distance=10.0  # По умолчанию
+                    )
+                    network_model.links.append(network_link)
+                
+                # Сохраняем в базу данных
+                network_id = self.db_manager.save_network(network_model, network_name, description or "", 300)
+                messagebox.showinfo("Успех", f"Сеть '{network_name}' сохранена в базе данных (ID: {network_id})")
             
         except Exception as e:
             messagebox.showerror("Ошибка", f"Не удалось сохранить сеть: {str(e)}")
+            print(f"[ERROR] Ошибка при сохранении сети: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _manage_local_networks(self):
+        """Управление локальными сетями"""
+        from .local_network_manager_dialog import LocalNetworkManagerDialog
+        
+        # Открываем диалог управления локальными сетями
+        dialog = LocalNetworkManagerDialog(self.root)
+        result = dialog.show()
+        
+        if result and result['action'] == 'load':
+            try:
+                network_name = result['network_name']
+                network_data = result['network_data']
+                
+                # Конвертируем словарные данные в SystemModel
+                from ..system_model import SystemModel, Node, NodeType, Link, LinkType
+                
+                network = SystemModel(network_name)
+                
+                # Создаем узлы из словарных данных
+                for node_id, connections in network_data.items():
+                    # Создаем узел с базовыми параметрами
+                    node = Node(
+                        id=node_id,
+                        node_type=NodeType.SERVER,
+                        capacity=1000.0,  # По умолчанию
+                        reliability=0.95,  # По умолчанию
+                        cpu_load=0.0,
+                        memory_usage=0.0,
+                        load=0.0,
+                        threat_level=0.1,
+                        encryption=True,
+                        x=0.0,  # Будет установлено визуализатором
+                        y=0.0
+                    )
+                    network.add_node(node)
+                
+                # Создаем связи из словарных данных
+                for source_id, targets in network_data.items():
+                    for target_id in targets:
+                        # Проверяем, что оба узла существуют
+                        if source_id in network_data and target_id in network_data:
+                            link = Link(
+                                source=source_id,
+                                target=target_id,
+                                bandwidth=100.0,  # По умолчанию
+                                latency=10.0,  # По умолчанию
+                                reliability=0.9,  # По умолчанию
+                                link_type=LinkType.ETHERNET,
+                                utilization=0.0,
+                                load=0.0,
+                                encryption=True,
+                                threat_level=0.1
+                            )
+                            network.add_link(link)
+                
+                # Обновление визуализатора сети
+                self.network_viewer.update_network(network)
+                
+                # Создание симулятора для загруженной сети
+                self._create_simulator_for_network(network, 300)  # 5 минут по умолчанию
+                
+                # Логируем загрузку локальной сети
+                self.program_state_manager.log_network_created(0, network.name)
+                
+                messagebox.showinfo("Успех", f"Загружена локальная сеть: {network_name}\nУзлов: {len(network.nodes)}, Связей: {len(network.links)}")
+                
+            except Exception as e:
+                messagebox.showerror("Ошибка", f"Не удалось загрузить локальную сеть: {str(e)}")
+    
+    def _save_current_network_locally(self):
+        """Сохраняет текущую сеть в локальное хранилище"""
+        if not hasattr(self, 'network_viewer') or not self.network_viewer.network:
+            messagebox.showwarning("Предупреждение", "Нет сети для сохранения")
+            return
+        
+        try:
+            from tkinter import simpledialog
+            from ..storage.network_storage import NetworkStorage
+            
+            # Запрашиваем название сети
+            network_name = simpledialog.askstring(
+                "Сохранение локальной сети",
+                "Введите название сети:",
+                initialvalue=self.network_viewer.network.name
+            )
+            
+            if not network_name:
+                return
+            
+            # Создаем экземпляр хранилища
+            storage = NetworkStorage("networks")
+            
+            # Конвертируем текущую сеть в словарный формат
+            network = self.network_viewer.network
+            network_data = {}
+            
+            # Создаем словарь узлов и их связей
+            for node in network.nodes:
+                connections = []
+                for link in network.links:
+                    if link.source == node.id:
+                        connections.append(link.target)
+                network_data[node.id] = connections
+            
+            # Сохраняем сеть
+            if storage.save_network(network_name, network_data):
+                messagebox.showinfo("Успех", f"Сеть '{network_name}' сохранена в локальное хранилище")
+            else:
+                messagebox.showerror("Ошибка", f"Не удалось сохранить сеть '{network_name}'")
+                
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Не удалось сохранить локальную сеть: {str(e)}")
     
     def create_system(self):
         """Создает новую систему"""
