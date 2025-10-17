@@ -1,0 +1,18 @@
+Сеть: demo_network
+==================================================
+
+Узел 'server1':
+  Связан с: server2, server3
+
+Узел 'server2':
+  Связан с: server3
+
+Узел 'server3':
+  Нет связей
+
+Узел 'router1':
+  Связан с: server1, server2
+
+Узел 'router2':
+  Связан с: server3
+
