@@ -196,13 +196,17 @@ class ControlPanel:
     
     def _pause_simulation(self):
         """Приостанавливает симуляцию"""
-        if hasattr(self.parent, 'program_state_manager'):
+        if hasattr(self.parent, 'pause_simulation'):
+            self.parent.pause_simulation()
+        elif hasattr(self.parent, 'program_state_manager'):
             self.parent.program_state_manager.pause_program()
             self._update_button_states()
     
     def _resume_simulation(self):
         """Возобновляет симуляцию"""
-        if hasattr(self.parent, 'program_state_manager'):
+        if hasattr(self.parent, 'resume_simulation'):
+            self.parent.resume_simulation()
+        elif hasattr(self.parent, 'program_state_manager'):
             self.parent.program_state_manager.resume_program()
             self._update_button_states()
     
