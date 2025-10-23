@@ -115,8 +115,8 @@ python main.py --whatif-analysis
 
 1. **Клонирование репозитория**:
 ```bash
-git clone https://github.com/your-username/ics-analyzer.git
-cd ics-analyzer
+git clone https://github.com/Dark-Vol/ics-analysis.git
+cd ics-analysis
 ```
 
 2. **Установка Python зависимостей**:
@@ -124,7 +124,6 @@ cd ics-analyzer
 pip install -r requirements.txt
 pip install python-docx  # Для генерации отчетов Word
 ```
-
 3. **Проверка установки**:
 ```bash
 python main.py --help
@@ -136,7 +135,6 @@ python main.py --help
 ```bash
 pip install ics-analyzer
 ```
-
 #### Через conda
 ```bash
 conda create -n ics-analyzer python=3.9
