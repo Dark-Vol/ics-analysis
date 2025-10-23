@@ -205,8 +205,14 @@ class MainWindow:
         self.topology_frame = ttk.Frame(self.viz_notebook)
         self.viz_notebook.add(self.topology_frame, text="🕸️ Топология")
         
-        # Создание визуализатора сети
-        self.network_viewer = NetworkViewer(self, self.topology_frame)
+        # Создание интерактивного визуализатора сети
+        try:
+            from .interactive_network_viewer import InteractiveNetworkViewer
+            self.network_viewer = InteractiveNetworkViewer(self, self.topology_frame)
+        except ImportError:
+            # Fallback на обычный визуализатор
+            from .network_viewer import NetworkViewer
+            self.network_viewer = NetworkViewer(self, self.topology_frame)
         
         # Вкладка "Анализ надежности"
         self.reliability_frame = ttk.Frame(self.viz_notebook)
@@ -945,6 +951,10 @@ class MainWindow:
                 # Обновление визуализатора сети
                 self.network_viewer.update_network(network)
                 
+                # Загрузка сети в интерактивный визуализатор (если доступен)
+                if hasattr(self.network_viewer, 'load_network_from_model'):
+                    self.network_viewer.load_network_from_model(network)
+                
                 # Создание симулятора для загруженной сети
                 analysis_time = result.get('analysis_time', 300)  # 5 минут по умолчанию
                 self._create_simulator_for_network(network, analysis_time)
@@ -1486,7 +1496,10 @@ class MainWindow:
             if hasattr(self, 'control_panel'):
                 self.control_panel.set_simulation_state(False)
             
-            # Очищаем графики
+            # Очищаем все графики
+            self._reset_all_charts()
+            
+            # Очищаем метрики
             if hasattr(self, 'metrics_panel'):
                 self.metrics_panel.reset_metrics()
             
@@ -1494,6 +1507,122 @@ class MainWindow:
             
         except Exception as e:
             messagebox.showerror("Ошибка", f"Ошибка при сбросе симуляции: {str(e)}")
+    
+    def _reset_all_charts(self):
+        """Сбрасывает все графики в приложении"""
+        try:
+            # Сброс основных графиков метрик
+            if hasattr(self, 'throughput_line'):
+                self.throughput_line.set_data([], [])
+            if hasattr(self, 'latency_line'):
+                self.latency_line.set_data([], [])
+            if hasattr(self, 'reliability_line'):
+                self.reliability_line.set_data([], [])
+            if hasattr(self, 'availability_line'):
+                self.availability_line.set_data([], [])
+            
+            # Сброс осей основных графиков
+            if hasattr(self, 'throughput_ax'):
+                self.throughput_ax.clear()
+                self.throughput_ax.set_title("ПРОПУСКНАЯ СПОСОБНОСТЬ (Мбит/с)", 
+                                           fontsize=12, fontweight='bold', 
+                                           color=self.theme.COLORS['text_primary'])
+                self.throughput_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
+                self.throughput_ax.set_ylabel("Мбит/с", color=self.theme.COLORS['text_primary'])
+                self.throughput_ax.grid(True, alpha=0.3)
+                self.throughput_line, = self.throughput_ax.plot([], [], 
+                                                              color=self.theme.COLORS['accent_gold'], 
+                                                              linewidth=2, label="Пропускная способность")
+                self.throughput_ax.legend()
+            
+            if hasattr(self, 'latency_ax'):
+                self.latency_ax.clear()
+                self.latency_ax.set_title("ЗАДЕРЖКА СИГНАЛА (мс)", 
+                                        fontsize=12, fontweight='bold', 
+                                        color=self.theme.COLORS['text_primary'])
+                self.latency_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
+                self.latency_ax.set_ylabel("мс", color=self.theme.COLORS['text_primary'])
+                self.latency_ax.grid(True, alpha=0.3)
+                self.latency_line, = self.latency_ax.plot([], [], 
+                                                        color=self.theme.COLORS['accent_gold'], 
+                                                        linewidth=2, label="Задержка")
+                self.latency_ax.legend()
+            
+            if hasattr(self, 'reliability_ax'):
+                self.reliability_ax.clear()
+                self.reliability_ax.set_title("НАДЕЖНОСТЬ СИСТЕМЫ", 
+                                            fontsize=12, fontweight='bold', 
+                                            color=self.theme.COLORS['text_primary'])
+                self.reliability_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
+                self.reliability_ax.set_ylabel("Надежность", color=self.theme.COLORS['text_primary'])
+                self.reliability_ax.grid(True, alpha=0.3)
+                self.reliability_line, = self.reliability_ax.plot([], [], 
+                                                                color=self.theme.COLORS['accent_gold'], 
+                                                                linewidth=2, label="Надежность")
+                self.reliability_ax.legend()
+            
+            if hasattr(self, 'availability_ax'):
+                self.availability_ax.clear()
+                self.availability_ax.set_title("ДОСТУПНОСТЬ СЕТИ", 
+                                             fontsize=12, fontweight='bold', 
+                                             color=self.theme.COLORS['text_primary'])
+                self.availability_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
+                self.availability_ax.set_ylabel("Доступность", color=self.theme.COLORS['text_primary'])
+                self.availability_ax.grid(True, alpha=0.3)
+                self.availability_line, = self.availability_ax.plot([], [], 
+                                                                  color=self.theme.COLORS['accent_gold'], 
+                                                                  linewidth=2, label="Доступность")
+                self.availability_ax.legend()
+            
+            # Сброс графика надежности в отдельной вкладке
+            if hasattr(self, 'reliability_line') and hasattr(self, 'reliability_ax'):
+                self.reliability_line.set_data([], [])
+                self.reliability_ax.clear()
+                self.reliability_ax.set_title("НАДЕЖНОСТЬ СИСТЕМЫ", 
+                                            fontsize=14, fontweight='bold', 
+                                            color=self.theme.COLORS['text_primary'])
+                self.reliability_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
+                self.reliability_ax.set_ylabel("Надежность", color=self.theme.COLORS['text_primary'])
+                self.reliability_ax.grid(True, alpha=0.3)
+                self.reliability_ax.set_ylim(0, 1)
+                self.reliability_line, = self.reliability_ax.plot([], [], 
+                                                                color=self.theme.COLORS['accent_gold'], 
+                                                                linewidth=2, label="Надежность системы")
+                self.reliability_ax.legend()
+            
+            # Сброс графика отказов
+            if hasattr(self, 'failures_line') and hasattr(self, 'failures_ax'):
+                self.failures_line.set_data([], [])
+                self.failures_ax.clear()
+                self.failures_ax.set_title("СОБЫТИЯ ОТКАЗОВ", 
+                                         fontsize=14, fontweight='bold', 
+                                         color=self.theme.COLORS['text_primary'])
+                self.failures_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
+                self.failures_ax.set_ylabel("Количество отказов", color=self.theme.COLORS['text_primary'])
+                self.failures_ax.grid(True, alpha=0.3)
+                self.failures_line, = self.failures_ax.plot([], [], 
+                                                          color=self.theme.COLORS['accent_gold'], 
+                                                          linewidth=2, label="Отказы")
+                self.failures_ax.legend()
+            
+            # Перерисовка всех canvas
+            if hasattr(self, 'metrics_canvas'):
+                self.metrics_canvas.draw_idle()
+            if hasattr(self, 'reliability_canvas'):
+                self.reliability_canvas.draw_idle()
+            if hasattr(self, 'failures_canvas'):
+                self.failures_canvas.draw_idle()
+            
+            # Сброс графика сети
+            if hasattr(self, 'network_viewer'):
+                self.network_viewer.reset_network_display()
+            
+            # Сброс детального окна сети, если оно открыто
+            if hasattr(self, 'network_details_window') and self.network_details_window:
+                self.network_details_window.reset_charts()
+            
+        except Exception as e:
+            print(f"Ошибка при сбросе графиков: {str(e)}")
     
     def update_status_display(self, status_info):
         """Обновляет отображение статуса"""
