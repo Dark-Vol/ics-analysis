@@ -42,7 +42,7 @@ class MainWindow:
         self.theme.configure_matplotlib_style()
         
         # Настройка главного окна
-        self.root.title("╔═══ ИКС АНАЛИЗАТОР КРОВАВЫХ АНГЕЛОВ ═══╗")
+        self.root.title("╔═══ АНАЛІЗАТОР ІКС КРИВАВИХ АНГЕЛІВ ═══╗")
         self.root.geometry("1600x1000")
         self.root.minsize(1200, 800)
         self.root.configure(bg=self.theme.COLORS['bg_primary'])
@@ -70,37 +70,37 @@ class MainWindow:
         # Меню "Файл"
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Файл", menu=file_menu)
-        file_menu.add_command(label="Новая симуляция", command=self._new_simulation)
-        file_menu.add_command(label="Загрузить конфигурацию", command=self._load_config)
-        file_menu.add_command(label="Сохранить конфигурацию", command=self._save_config)
+        file_menu.add_command(label="Нова симуляція", command=self._new_simulation)
+        file_menu.add_command(label="Завантажити конфігурацію", command=self._load_config)
+        file_menu.add_command(label="Зберегти конфігурацію", command=self._save_config)
         file_menu.add_separator()
-        file_menu.add_command(label="Создать/Загрузить сеть", command=self._open_network_dialog)
-        file_menu.add_command(label="Сохранить текущую сеть", command=self._save_network)
+        file_menu.add_command(label="Створити/Завантажити мережу", command=self._open_network_dialog)
+        file_menu.add_command(label="Зберегти поточну мережу", command=self._save_network)
         file_menu.add_separator()
-        file_menu.add_command(label="Управление локальными сетями", command=self._manage_local_networks)
-        file_menu.add_command(label="Сохранить в локальное хранилище", command=self._save_current_network_locally)
+        file_menu.add_command(label="Управління локальними мережами", command=self._manage_local_networks)
+        file_menu.add_command(label="Зберегти в локальне сховище", command=self._save_current_network_locally)
         file_menu.add_separator()
-        file_menu.add_command(label="Экспорт результатов", command=self._export_results)
+        file_menu.add_command(label="Експорт результатів", command=self._export_results)
         file_menu.add_separator()
-        file_menu.add_command(label="Выход", command=self._exit_application)
+        file_menu.add_command(label="Вихід", command=self._exit_application)
         
-        # Меню "Симуляция"
+        # Меню "Симуляція"
         sim_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Симуляция", menu=sim_menu)
-        sim_menu.add_command(label="Настройки симуляции", command=self._show_simulation_settings)
-        sim_menu.add_command(label="Добавить неблагоприятные условия", command=self._add_adverse_conditions)
+        menubar.add_cascade(label="Симуляція", menu=sim_menu)
+        sim_menu.add_command(label="Налаштування симуляції", command=self._show_simulation_settings)
+        sim_menu.add_command(label="Додати несприятливі умови", command=self._add_adverse_conditions)
         
-        # Меню "Анализ"
+        # Меню "Аналіз"
         analysis_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Анализ", menu=analysis_menu)
-        analysis_menu.add_command(label="Статистика производительности", command=self._show_performance_stats)
-        analysis_menu.add_command(label="Анализ надежности", command=self._show_reliability_analysis)
+        menubar.add_cascade(label="Аналіз", menu=analysis_menu)
+        analysis_menu.add_command(label="Статистика продуктивності", command=self._show_performance_stats)
+        analysis_menu.add_command(label="Аналіз надійності", command=self._show_reliability_analysis)
         
-        # Меню "Справка"
+        # Меню "Довідка"
         help_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Справка", menu=help_menu)
-        help_menu.add_command(label="О программе", command=self._show_about)
-        help_menu.add_command(label="Руководство пользователя", command=self._show_help)
+        menubar.add_cascade(label="Довідка", menu=help_menu)
+        help_menu.add_command(label="Про програму", command=self._show_about)
+        help_menu.add_command(label="Керівництво користувача", command=self._show_help)
     
     def _create_widgets(self):
         """Создает виджеты интерфейса"""
@@ -118,9 +118,9 @@ class MainWindow:
         
         # Статусная строка в военном стиле
         self.status_var = tk.StringVar()
-        self.status_var.set("╔═══ СИСТЕМА ГОТОВА К БОЕВЫМ ДЕЙСТВИЯМ ═══╗")
+        self.status_var.set("╔═══ СИСТЕМА ГОТОВА ДО БОЙОВИХ ДІЙ ═══╗")
         self.status_frame = self.theme.create_military_frame(self.root, 
-                                                           title="СТАТУС СИСТЕМЫ")
+                                                           title="СТАТУС СИСТЕМИ")
         self.status_label = tk.Label(self.status_frame,
                                    textvariable=self.status_var,
                                    bg=self.theme.COLORS['bg_panel'],
@@ -266,11 +266,11 @@ class MainWindow:
         self.reliability_ax = self.reliability_fig.add_subplot(111)
         
         # Настройка графика
-        self.reliability_ax.set_title("НАДЕЖНОСТЬ СИСТЕМЫ", 
+        self.reliability_ax.set_title("НАДІЙНІСТЬ СИСТЕМИ", 
                                      color=self.theme.COLORS['text_secondary'],
                                      fontweight='bold', fontsize=14)
-        self.reliability_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
-        self.reliability_ax.set_ylabel("Надежность", color=self.theme.COLORS['text_primary'])
+        self.reliability_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
+        self.reliability_ax.set_ylabel("Надійність", color=self.theme.COLORS['text_primary'])
         self.reliability_ax.grid(True, alpha=0.3)
         self.reliability_ax.set_ylim(0, 1)
         
@@ -299,11 +299,11 @@ class MainWindow:
         self.failures_ax = self.failures_fig.add_subplot(111)
         
         # Настройка графика
-        self.failures_ax.set_title("СОБЫТИЯ ОТКАЗОВ", 
+        self.failures_ax.set_title("ПОДІЇ ВІДМОВ", 
                                   color=self.theme.COLORS['text_secondary'],
                                   fontweight='bold', fontsize=14)
-        self.failures_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
-        self.failures_ax.set_ylabel("Количество отказов", color=self.theme.COLORS['text_primary'])
+        self.failures_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
+        self.failures_ax.set_ylabel("Кількість відмов", color=self.theme.COLORS['text_primary'])
         self.failures_ax.grid(True, alpha=0.3)
         
         # Инициализация линии графика
@@ -331,21 +331,21 @@ class MainWindow:
         
         # График пропускной способности
         self.throughput_ax = self.metrics_fig.add_subplot(221)
-        self.throughput_ax.set_title("ПРОПУСКНАЯ СПОСОБНОСТЬ (Мбит/с)", 
+        self.throughput_ax.set_title("ПРОПУСКНА СПОСОБНІСТЬ (Мбіт/с)", 
                                    color=self.theme.COLORS['text_secondary'],
                                    fontweight='bold')
-        self.throughput_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
-        self.throughput_ax.set_ylabel("Мбит/с", color=self.theme.COLORS['text_primary'])
+        self.throughput_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
+        self.throughput_ax.set_ylabel("Мбіт/с", color=self.theme.COLORS['text_primary'])
         self.throughput_line, = self.throughput_ax.plot([], [], 
                                                       color=self.theme.COLORS['primary_red'],
                                                       linewidth=3, alpha=0.8)
         
         # График задержки
         self.latency_ax = self.metrics_fig.add_subplot(222)
-        self.latency_ax.set_title("ЗАДЕРЖКА СИГНАЛА (мс)", 
+        self.latency_ax.set_title("ЗАТРИМКА СИГНАЛУ (мс)", 
                                 color=self.theme.COLORS['text_secondary'],
                                 fontweight='bold')
-        self.latency_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
+        self.latency_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
         self.latency_ax.set_ylabel("мс", color=self.theme.COLORS['text_primary'])
         self.latency_line, = self.latency_ax.plot([], [], 
                                                 color=self.theme.COLORS['warning'],
@@ -353,22 +353,22 @@ class MainWindow:
         
         # График надежности
         self.reliability_ax = self.metrics_fig.add_subplot(223)
-        self.reliability_ax.set_title("НАДЕЖНОСТЬ СИСТЕМЫ", 
+        self.reliability_ax.set_title("НАДІЙНІСТЬ СИСТЕМИ", 
                                     color=self.theme.COLORS['text_secondary'],
                                     fontweight='bold')
-        self.reliability_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
-        self.reliability_ax.set_ylabel("Надежность", color=self.theme.COLORS['text_primary'])
+        self.reliability_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
+        self.reliability_ax.set_ylabel("Надійність", color=self.theme.COLORS['text_primary'])
         self.reliability_line, = self.reliability_ax.plot([], [], 
                                                         color=self.theme.COLORS['success'],
                                                         linewidth=3, alpha=0.8)
         
         # График доступности
         self.availability_ax = self.metrics_fig.add_subplot(224)
-        self.availability_ax.set_title("ДОСТУПНОСТЬ СЕТИ", 
+        self.availability_ax.set_title("ДОСТУПНІСТЬ МЕРЕЖІ", 
                                      color=self.theme.COLORS['text_secondary'],
                                      fontweight='bold')
-        self.availability_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
-        self.availability_ax.set_ylabel("Доступность", color=self.theme.COLORS['text_primary'])
+        self.availability_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
+        self.availability_ax.set_ylabel("Доступність", color=self.theme.COLORS['text_primary'])
         self.availability_line, = self.availability_ax.plot([], [], 
                                                           color=self.theme.COLORS['primary_gold'],
                                                           linewidth=3, alpha=0.8)
@@ -431,8 +431,8 @@ class MainWindow:
         
         # Заголовок приложения
         banner_label = tk.Label(banner_frame,
-                              text="╔═══ ИКС АНАЛИЗАТОР КРОВАВЫХ АНГЕЛОВ ═══╗\n"
-                                   "║     СИСТЕМА МОНИТОРИНГА СЕТИ         ║\n"
+                              text="╔═══ АНАЛІЗАТОР ІКС КРИВАВИХ АНГЕЛІВ ═══╗\n"
+                                   "║     СИСТЕМА МОНІТОРИНГУ МЕРЕЖІ       ║\n"
                                    "╚═══════════════════════════════════════════╝",
                               bg=self.theme.COLORS['primary_red'],
                               fg=self.theme.COLORS['text_primary'],
@@ -454,13 +454,13 @@ class MainWindow:
             self.network_viewer.update_network(network)
             
             # Обновление статуса
-            self.status_var.set(f"╔═══ СИСТЕМА СОЗДАНА: {nodes} УЗЛОВ ═══╗")
+            self.status_var.set(f"╔═══ СИСТЕМА СТВОРЕНА: {nodes} ВУЗЛІВ ═══╗")
             
             print(f"Система создана: {nodes} узлов, {len(network.links)} связей")
             
         except Exception as e:
             print(f"Ошибка создания системы: {e}")
-            messagebox.showerror("Ошибка", f"Не удалось создать систему: {str(e)}")
+            messagebox.showerror("Помилка", f"Не вдалося створити систему: {str(e)}")
     
     def start_simulation(self):
         """Запускает симуляцию"""
@@ -503,10 +503,10 @@ class MainWindow:
             
             # Обновление интерфейса
             self.control_panel.set_simulation_state(True)
-            self.status_var.set("╔═══ БОЕВАЯ СИМУЛЯЦИЯ АКТИВНА ═══╗")
+            self.status_var.set("╔═══ БОЙОВА СИМУЛЯЦІЯ АКТИВНА ═══╗")
             
         except Exception as e:
-            messagebox.showerror("Ошибка", f"Не удалось запустить симуляцию: {str(e)}")
+            messagebox.showerror("Помилка", f"Не вдалося запустити симуляцію: {str(e)}")
     
     def stop_simulation(self):
         """Останавливает симуляцию"""
@@ -541,11 +541,11 @@ class MainWindow:
                 print("[DEBUG] Интерфейс обновлен")
             
             print("[DEBUG] Симуляция успешно остановлена")
-            messagebox.showinfo("Информация", "Симуляция остановлена")
+            messagebox.showinfo("Інформація", "Симуляція зупинена")
             
         except Exception as e:
             print(f"[ERROR] Ошибка при остановке симуляции: {e}")
-            messagebox.showerror("Ошибка", f"Ошибка при остановке симуляции: {str(e)}")
+            messagebox.showerror("Помилка", f"Помилка при зупинці симуляції: {str(e)}")
     
     def pause_simulation(self):
         """Приостанавливает симуляцию"""
@@ -579,11 +579,11 @@ class MainWindow:
                 print("[DEBUG] Интерфейс обновлен")
             
             print("[DEBUG] Симуляция успешно приостановлена")
-            messagebox.showinfo("Информация", "Симуляция приостановлена")
+            messagebox.showinfo("Інформація", "Симуляція призупинена")
             
         except Exception as e:
             print(f"[ERROR] Ошибка при приостановке симуляции: {e}")
-            messagebox.showerror("Ошибка", f"Ошибка при приостановке симуляции: {str(e)}")
+            messagebox.showerror("Помилка", f"Помилка при призупиненні симуляції: {str(e)}")
     
     def resume_simulation(self):
         """Возобновляет симуляцию"""
@@ -617,11 +617,11 @@ class MainWindow:
                 print("[DEBUG] Интерфейс обновлен")
             
             print("[DEBUG] Симуляция успешно возобновлена")
-            messagebox.showinfo("Информация", "Симуляция возобновлена")
+            messagebox.showinfo("Інформація", "Симуляція відновлена")
             
         except Exception as e:
             print(f"[ERROR] Ошибка при возобновлении симуляции: {e}")
-            messagebox.showerror("Ошибка", f"Ошибка при возобновлении симуляции: {str(e)}")
+            messagebox.showerror("Помилка", f"Помилка при відновленні симуляції: {str(e)}")
     
     def _add_default_adverse_conditions(self):
         """Добавляет стандартные неблагоприятные условия"""
@@ -677,7 +677,7 @@ class MainWindow:
         """Обработчик завершения симуляции"""
         self.is_simulation_running = False
         self.control_panel.set_simulation_state(False)
-        self.status_var.set("╔═══ МИССИЯ ЗАВЕРШЕНА ═══╗")
+        self.status_var.set("╔═══ МІСІЯ ЗАВЕРШЕНА ═══╗")
         
         # Показ результатов
         if self.simulator:
@@ -865,7 +865,7 @@ class MainWindow:
             # Логируем создание сети
             self.program_state_manager.log_network_created(0, network.name)  # ID будет обновлен при сохранении
             
-            messagebox.showinfo("Успех", f"Создана сеть с {len(network.nodes)} узлами и {len(network.links)} связями\nВремя анализа: {analysis_time} сек ({analysis_time/60:.1f} мин)")
+            messagebox.showinfo("Успіх", f"Створена мережа з {len(network.nodes)} вузлами та {len(network.links)} зв'язками\nЧас аналізу: {analysis_time} сек ({analysis_time/60:.1f} хв)")
     
     def _load_network(self):
         """Загружает сеть из базы данных"""
@@ -963,15 +963,15 @@ class MainWindow:
                 network_id = result['network_data']['id']
                 self.program_state_manager.log_network_created(network_id, network.name)
                 
-                messagebox.showinfo("Успех", f"Загружена сеть: {network.name}\nВремя анализа: {analysis_time} сек ({analysis_time/60:.1f} мин)")
+                messagebox.showinfo("Успіх", f"Завантажена мережа: {network.name}\nЧас аналізу: {analysis_time} сек ({analysis_time/60:.1f} хв)")
                 
             except Exception as e:
-                messagebox.showerror("Ошибка", f"Не удалось загрузить сеть: {str(e)}")
+                messagebox.showerror("Помилка", f"Не вдалося завантажити мережу: {str(e)}")
     
     def _save_network(self):
         """Сохраняет текущую сеть в базу данных"""
         if not hasattr(self, 'network_viewer') or not self.network_viewer.network:
-            messagebox.showwarning("Предупреждение", "Нет сети для сохранения")
+            messagebox.showwarning("Попередження", "Немає мережі для збереження")
             return
         
         try:
@@ -999,7 +999,7 @@ class MainWindow:
             if hasattr(network, 'nodes') and isinstance(network.nodes, list):
                 # Это NetworkModel - сохраняем напрямую
                 network_id = self.db_manager.save_network(network, network_name, description or "", 300)
-                messagebox.showinfo("Успех", f"Сеть '{network_name}' сохранена в базе данных (ID: {network_id})")
+                messagebox.showinfo("Успіх", f"Мережа '{network_name}' збережена в базі даних (ID: {network_id})")
             else:
                 # Это SystemModel - конвертируем в NetworkModel
                 from ..models.network_model import NetworkModel, NetworkNode, NetworkLink
@@ -1038,10 +1038,10 @@ class MainWindow:
                 
                 # Сохраняем в базу данных
                 network_id = self.db_manager.save_network(network_model, network_name, description or "", 300)
-                messagebox.showinfo("Успех", f"Сеть '{network_name}' сохранена в базе данных (ID: {network_id})")
+                messagebox.showinfo("Успіх", f"Мережа '{network_name}' збережена в базі даних (ID: {network_id})")
             
         except Exception as e:
-            messagebox.showerror("Ошибка", f"Не удалось сохранить сеть: {str(e)}")
+            messagebox.showerror("Помилка", f"Не вдалося зберегти мережу: {str(e)}")
             print(f"[ERROR] Ошибка при сохранении сети: {e}")
             import traceback
             traceback.print_exc()
@@ -1110,15 +1110,15 @@ class MainWindow:
                 # Логируем загрузку локальной сети
                 self.program_state_manager.log_network_created(0, network.name)
                 
-                messagebox.showinfo("Успех", f"Загружена локальная сеть: {network_name}\nУзлов: {len(network.nodes)}, Связей: {len(network.links)}")
+                messagebox.showinfo("Успіх", f"Завантажена локальна мережа: {network_name}\nВузлів: {len(network.nodes)}, Зв'язків: {len(network.links)}")
                 
             except Exception as e:
-                messagebox.showerror("Ошибка", f"Не удалось загрузить локальную сеть: {str(e)}")
+                messagebox.showerror("Помилка", f"Не вдалося завантажити локальну мережу: {str(e)}")
     
     def _save_current_network_locally(self):
         """Сохраняет текущую сеть в локальное хранилище"""
         if not hasattr(self, 'network_viewer') or not self.network_viewer.network:
-            messagebox.showwarning("Предупреждение", "Нет сети для сохранения")
+            messagebox.showwarning("Попередження", "Немає мережі для збереження")
             return
         
         try:
@@ -1152,12 +1152,12 @@ class MainWindow:
             
             # Сохраняем сеть
             if storage.save_network(network_name, network_data):
-                messagebox.showinfo("Успех", f"Сеть '{network_name}' сохранена в локальное хранилище")
+                messagebox.showinfo("Успіх", f"Мережа '{network_name}' збережена в локальне сховище")
             else:
-                messagebox.showerror("Ошибка", f"Не удалось сохранить сеть '{network_name}'")
+                messagebox.showerror("Помилка", f"Не вдалося зберегти мережу '{network_name}'")
                 
         except Exception as e:
-            messagebox.showerror("Ошибка", f"Не удалось сохранить локальную сеть: {str(e)}")
+            messagebox.showerror("Помилка", f"Не вдалося зберегти локальну мережу: {str(e)}")
     
     def create_system(self):
         """Создает новую систему"""
@@ -1182,11 +1182,11 @@ class MainWindow:
                 # Обновляем локальное состояние
                 self.is_simulation_running = True
                 
-                messagebox.showinfo("Информация", "Симуляция запущена")
+                messagebox.showinfo("Інформація", "Симуляція запущена")
             else:
-                messagebox.showwarning("Предупреждение", "Симуляция уже выполняется")
+                messagebox.showwarning("Попередження", "Симуляція вже виконується")
         else:
-            messagebox.showwarning("Предупреждение", "Сначала создайте или загрузите сеть")
+            messagebox.showwarning("Попередження", "Спочатку створіть або завантажте мережу")
     
     def _create_simulator_for_network(self, network, analysis_time=300):
         """Создает симулятор для сети"""
@@ -1296,7 +1296,7 @@ class MainWindow:
                 self.config.save_config()
                 self.status_var.set(f"Конфигурация загружена: {filename}")
             except Exception as e:
-                messagebox.showerror("Ошибка", f"Не удалось загрузить конфигурацию: {str(e)}")
+                messagebox.showerror("Помилка", f"Не вдалося завантажити конфігурацію: {str(e)}")
     
     def _save_config(self):
         """Сохраняет конфигурацию в файл"""
@@ -1310,12 +1310,12 @@ class MainWindow:
                 self.config.save_config()
                 self.status_var.set(f"Конфигурация сохранена: {filename}")
             except Exception as e:
-                messagebox.showerror("Ошибка", f"Не удалось сохранить конфигурацию: {str(e)}")
+                messagebox.showerror("Помилка", f"Не вдалося зберегти конфігурацію: {str(e)}")
     
     def _export_results(self):
         """Экспортирует результаты симуляции"""
         if not self.simulator:
-            messagebox.showwarning("Предупреждение", "Нет данных для экспорта")
+            messagebox.showwarning("Попередження", "Немає даних для експорту")
             return
         
         filename = filedialog.asksaveasfilename(
@@ -1328,23 +1328,23 @@ class MainWindow:
                 # Здесь можно добавить экспорт данных
                 self.status_var.set(f"Результаты экспортированы: {filename}")
             except Exception as e:
-                messagebox.showerror("Ошибка", f"Не удалось экспортировать результаты: {str(e)}")
+                messagebox.showerror("Помилка", f"Не вдалося експортувати результати: {str(e)}")
     
     def _show_simulation_settings(self):
         """Показывает настройки симуляции"""
-        messagebox.showinfo("Настройки", "Окно настроек симуляции будет реализовано")
+        messagebox.showinfo("Налаштування", "Вікно налаштувань симуляції буде реалізовано")
     
     def _add_adverse_conditions(self):
         """Показывает окно добавления неблагоприятных условий"""
-        messagebox.showinfo("Неблагоприятные условия", "Окно добавления условий будет реализовано")
+        messagebox.showinfo("Несприятливі умови", "Вікно додавання умов буде реалізовано")
     
     def _show_performance_stats(self):
         """Показывает статистику производительности"""
-        messagebox.showinfo("Статистика", "Окно статистики будет реализовано")
+        messagebox.showinfo("Статистика", "Вікно статистики буде реалізовано")
     
     def _show_reliability_analysis(self):
         """Показывает анализ надежности"""
-        messagebox.showinfo("Анализ надежности", "Окно анализа будет реализовано")
+        messagebox.showinfo("Аналіз надійності", "Вікно аналізу буде реалізовано")
     
     def _show_about(self):
         """Показывает информацию о программе"""
@@ -1359,11 +1359,11 @@ class MainWindow:
 работы ИКС в условиях помех, отказов и других
 неблагоприятных факторов.
         """
-        messagebox.showinfo("О программе", about_text)
+        messagebox.showinfo("Про програму", about_text)
     
     def _show_help(self):
         """Показывает справку"""
-        messagebox.showinfo("Справка", "Руководство пользователя будет добавлено")
+        messagebox.showinfo("Довідка", "Керівництво користувача буде додано")
     
     def _exit_application(self):
         """Выход из приложения"""
@@ -1385,15 +1385,15 @@ class MainWindow:
                 if self.simulator:
                     self.simulator.network = result['network']
                 
-                self.status_var.set("╔═══ СЕТЬ ЗАГРУЖЕНА ═══╗")
+                self.status_var.set("╔═══ МЕРЕЖА ЗАВАНТАЖЕНА ═══╗")
                 
         except Exception as e:
-            messagebox.showerror("Ошибка", f"Не удалось открыть диалог сети: {str(e)}")
+            messagebox.showerror("Помилка", f"Не удалось открыть диалог сети: {str(e)}")
     
     def _save_current_network(self):
         """Сохраняет текущую сеть"""
         if not self.network_viewer.network:
-            messagebox.showwarning("Предупреждение", "Нет сети для сохранения")
+            messagebox.showwarning("Попередження", "Немає мережі для збереження")
             return
         
         # Диалог ввода имени сети
@@ -1416,18 +1416,18 @@ class MainWindow:
         def save_and_close():
             name = name_entry.get().strip()
             if not name:
-                messagebox.showerror("Ошибка", "Введите имя сети")
+                messagebox.showerror("Помилка", "Введите имя сети")
                 return
             
             try:
                 if self.network_viewer.save_current_network(name, desc_entry.get()):
-                    messagebox.showinfo("Успех", f"Сеть '{name}' сохранена")
+                    messagebox.showinfo("Успіх", f"Мережа '{name}' збережена")
                     save_dialog.destroy()
-                    self.status_var.set("╔═══ СЕТЬ СОХРАНЕНА ═══╗")
+                    self.status_var.set("╔═══ МЕРЕЖА ЗБЕРЕЖЕНА ═══╗")
                 else:
-                    messagebox.showerror("Ошибка", "Не удалось сохранить сеть")
+                    messagebox.showerror("Помилка", "Не вдалося зберегти мережу")
             except Exception as e:
-                messagebox.showerror("Ошибка", f"Не удалось сохранить сеть: {str(e)}")
+                messagebox.showerror("Помилка", f"Не вдалося зберегти мережу: {str(e)}")
         
         # Кнопки
         buttons_frame = ttk.Frame(save_dialog)
@@ -1474,12 +1474,12 @@ class MainWindow:
                 output_path
             )
             
-            messagebox.showinfo("Успех", f"Отчет сохранен: {report_path}")
+            messagebox.showinfo("Успіх", f"Звіт збережено: {report_path}")
             
         except ImportError:
-            messagebox.showerror("Ошибка", "Модуль python-docx не установлен.\nУстановите: pip install python-docx")
+            messagebox.showerror("Помилка", "Модуль python-docx не встановлено.\nВстановіть: pip install python-docx")
         except Exception as e:
-            messagebox.showerror("Ошибка", f"Не удалось создать отчет: {str(e)}")
+            messagebox.showerror("Помилка", f"Не вдалося створити звіт: {str(e)}")
     
     def _reset_simulation(self):
         """Сбрасывает симуляцию"""
@@ -1503,10 +1503,10 @@ class MainWindow:
             if hasattr(self, 'metrics_panel'):
                 self.metrics_panel.reset_metrics()
             
-            messagebox.showinfo("Информация", "Симуляция сброшена")
+            messagebox.showinfo("Інформація", "Симуляція скинута")
             
         except Exception as e:
-            messagebox.showerror("Ошибка", f"Ошибка при сбросе симуляции: {str(e)}")
+            messagebox.showerror("Помилка", f"Помилка при скиданні симуляції: {str(e)}")
     
     def _reset_all_charts(self):
         """Сбрасывает все графики в приложении"""
@@ -1524,11 +1524,11 @@ class MainWindow:
             # Сброс осей основных графиков
             if hasattr(self, 'throughput_ax'):
                 self.throughput_ax.clear()
-                self.throughput_ax.set_title("ПРОПУСКНАЯ СПОСОБНОСТЬ (Мбит/с)", 
+                self.throughput_ax.set_title("ПРОПУСКНА СПОСОБНІСТЬ (Мбіт/с)", 
                                            fontsize=12, fontweight='bold', 
                                            color=self.theme.COLORS['text_primary'])
-                self.throughput_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
-                self.throughput_ax.set_ylabel("Мбит/с", color=self.theme.COLORS['text_primary'])
+                self.throughput_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
+                self.throughput_ax.set_ylabel("Мбіт/с", color=self.theme.COLORS['text_primary'])
                 self.throughput_ax.grid(True, alpha=0.3)
                 self.throughput_line, = self.throughput_ax.plot([], [], 
                                                               color=self.theme.COLORS['accent_gold'], 
@@ -1537,10 +1537,10 @@ class MainWindow:
             
             if hasattr(self, 'latency_ax'):
                 self.latency_ax.clear()
-                self.latency_ax.set_title("ЗАДЕРЖКА СИГНАЛА (мс)", 
+                self.latency_ax.set_title("ЗАТРИМКА СИГНАЛУ (мс)", 
                                         fontsize=12, fontweight='bold', 
                                         color=self.theme.COLORS['text_primary'])
-                self.latency_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
+                self.latency_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
                 self.latency_ax.set_ylabel("мс", color=self.theme.COLORS['text_primary'])
                 self.latency_ax.grid(True, alpha=0.3)
                 self.latency_line, = self.latency_ax.plot([], [], 
@@ -1550,11 +1550,11 @@ class MainWindow:
             
             if hasattr(self, 'reliability_ax'):
                 self.reliability_ax.clear()
-                self.reliability_ax.set_title("НАДЕЖНОСТЬ СИСТЕМЫ", 
+                self.reliability_ax.set_title("НАДІЙНІСТЬ СИСТЕМИ", 
                                             fontsize=12, fontweight='bold', 
                                             color=self.theme.COLORS['text_primary'])
-                self.reliability_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
-                self.reliability_ax.set_ylabel("Надежность", color=self.theme.COLORS['text_primary'])
+                self.reliability_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
+                self.reliability_ax.set_ylabel("Надійність", color=self.theme.COLORS['text_primary'])
                 self.reliability_ax.grid(True, alpha=0.3)
                 self.reliability_line, = self.reliability_ax.plot([], [], 
                                                                 color=self.theme.COLORS['accent_gold'], 
@@ -1563,11 +1563,11 @@ class MainWindow:
             
             if hasattr(self, 'availability_ax'):
                 self.availability_ax.clear()
-                self.availability_ax.set_title("ДОСТУПНОСТЬ СЕТИ", 
+                self.availability_ax.set_title("ДОСТУПНІСТЬ МЕРЕЖІ", 
                                              fontsize=12, fontweight='bold', 
                                              color=self.theme.COLORS['text_primary'])
-                self.availability_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
-                self.availability_ax.set_ylabel("Доступность", color=self.theme.COLORS['text_primary'])
+                self.availability_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
+                self.availability_ax.set_ylabel("Доступність", color=self.theme.COLORS['text_primary'])
                 self.availability_ax.grid(True, alpha=0.3)
                 self.availability_line, = self.availability_ax.plot([], [], 
                                                                   color=self.theme.COLORS['accent_gold'], 
@@ -1578,11 +1578,11 @@ class MainWindow:
             if hasattr(self, 'reliability_line') and hasattr(self, 'reliability_ax'):
                 self.reliability_line.set_data([], [])
                 self.reliability_ax.clear()
-                self.reliability_ax.set_title("НАДЕЖНОСТЬ СИСТЕМЫ", 
+                self.reliability_ax.set_title("НАДІЙНІСТЬ СИСТЕМИ", 
                                             fontsize=14, fontweight='bold', 
                                             color=self.theme.COLORS['text_primary'])
-                self.reliability_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
-                self.reliability_ax.set_ylabel("Надежность", color=self.theme.COLORS['text_primary'])
+                self.reliability_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
+                self.reliability_ax.set_ylabel("Надійність", color=self.theme.COLORS['text_primary'])
                 self.reliability_ax.grid(True, alpha=0.3)
                 self.reliability_ax.set_ylim(0, 1)
                 self.reliability_line, = self.reliability_ax.plot([], [], 
@@ -1594,11 +1594,11 @@ class MainWindow:
             if hasattr(self, 'failures_line') and hasattr(self, 'failures_ax'):
                 self.failures_line.set_data([], [])
                 self.failures_ax.clear()
-                self.failures_ax.set_title("СОБЫТИЯ ОТКАЗОВ", 
+                self.failures_ax.set_title("ПОДІЇ ВІДМОВ", 
                                          fontsize=14, fontweight='bold', 
                                          color=self.theme.COLORS['text_primary'])
-                self.failures_ax.set_xlabel("Время (с)", color=self.theme.COLORS['text_primary'])
-                self.failures_ax.set_ylabel("Количество отказов", color=self.theme.COLORS['text_primary'])
+                self.failures_ax.set_xlabel("Час (с)", color=self.theme.COLORS['text_primary'])
+                self.failures_ax.set_ylabel("Кількість відмов", color=self.theme.COLORS['text_primary'])
                 self.failures_ax.grid(True, alpha=0.3)
                 self.failures_line, = self.failures_ax.plot([], [], 
                                                           color=self.theme.COLORS['accent_gold'], 

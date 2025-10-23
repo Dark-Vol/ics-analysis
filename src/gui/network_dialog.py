@@ -47,7 +47,7 @@ class NetworkDialog:
         
         # Заголовок
         title_label = tk.Label(main_frame,
-                             text="╔═══ УПРАВЛЕНИЕ СЕТЯМИ ═══╗",
+                             text="╔═══ УПРАВЛІННЯ МЕРЕЖАМИ ═══╗",
                              bg=self.theme.COLORS['bg_primary'],
                              fg=self.theme.COLORS['text_secondary'],
                              font=self.theme.FONTS['military'])
@@ -66,20 +66,20 @@ class NetworkDialog:
     def _create_new_network_tab(self):
         """Создает вкладку для создания новой сети"""
         new_frame = ttk.Frame(self.notebook)
-        self.notebook.add(new_frame, text="Создать сеть")
+        self.notebook.add(new_frame, text="Створити мережу")
         
         # Параметры сети
-        params_frame = ttk.LabelFrame(new_frame, text="Параметры сети", padding=10)
+        params_frame = ttk.LabelFrame(new_frame, text="Параметри мережі", padding=10)
         params_frame.pack(fill=tk.X, pady=10)
         
         # Количество узлов
-        tk.Label(params_frame, text="Количество узлов:").grid(row=0, column=0, sticky=tk.W, pady=5)
+        tk.Label(params_frame, text="Кількість вузлів:").grid(row=0, column=0, sticky=tk.W, pady=5)
         self.nodes_var = tk.IntVar(value=10)
         nodes_spinbox = ttk.Spinbox(params_frame, from_=3, to=50, textvariable=self.nodes_var)
         nodes_spinbox.grid(row=0, column=1, sticky=tk.W, padx=(10, 0), pady=5)
         
         # Вероятность соединения
-        tk.Label(params_frame, text="Вероятность соединения:").grid(row=1, column=0, sticky=tk.W, pady=5)
+        tk.Label(params_frame, text="Ймовірність з'єднання:").grid(row=1, column=0, sticky=tk.W, pady=5)
         self.connection_prob_var = tk.DoubleVar(value=0.3)
         prob_scale = ttk.Scale(params_frame, from_=0.1, to=1.0, variable=self.connection_prob_var, orient=tk.HORIZONTAL)
         prob_scale.grid(row=1, column=1, sticky=tk.W+tk.E, padx=(10, 0), pady=5)
@@ -90,7 +90,7 @@ class NetworkDialog:
         prob_scale.configure(command=lambda v: self.prob_label.configure(text=f"{float(v):.2f}"))
         
         # Время анализа сети
-        tk.Label(params_frame, text="Время анализа (сек):").grid(row=2, column=0, sticky=tk.W, pady=5)
+        tk.Label(params_frame, text="Час аналізу (сек):").grid(row=2, column=0, sticky=tk.W, pady=5)
         self.analysis_time_var = tk.IntVar(value=300)  # 5 минут по умолчанию
         time_spinbox = ttk.Spinbox(params_frame, from_=30, to=3600, textvariable=self.analysis_time_var, width=10)
         time_spinbox.grid(row=2, column=1, sticky=tk.W, padx=(10, 0), pady=5)

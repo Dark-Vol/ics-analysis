@@ -88,7 +88,7 @@ class InteractiveNetworkViewer:
     
     def _create_edit_control_panel(self):
         """Создает панель управления редактированием"""
-        edit_frame = ttk.LabelFrame(self.frame, text="Режим редактирования")
+        edit_frame = ttk.LabelFrame(self.frame, text="Режим редагування")
         edit_frame.pack(fill=tk.X, padx=5, pady=5)
         
         # Переключатели режимов
@@ -97,42 +97,42 @@ class InteractiveNetworkViewer:
         mode_frame = ttk.Frame(edit_frame)
         mode_frame.pack(fill=tk.X, pady=5)
         
-        ttk.Radiobutton(mode_frame, text="Просмотр", variable=self.edit_mode_var, 
+        ttk.Radiobutton(mode_frame, text="Перегляд", variable=self.edit_mode_var, 
                        value='view', command=self._set_edit_mode).pack(side=tk.LEFT, padx=5)
-        ttk.Radiobutton(mode_frame, text="Добавить узел", variable=self.edit_mode_var, 
+        ttk.Radiobutton(mode_frame, text="Додати вузол", variable=self.edit_mode_var, 
                        value='add_node', command=self._set_edit_mode).pack(side=tk.LEFT, padx=5)
-        ttk.Radiobutton(mode_frame, text="Добавить связь", variable=self.edit_mode_var, 
+        ttk.Radiobutton(mode_frame, text="Додати зв'язок", variable=self.edit_mode_var, 
                        value='add_edge', command=self._set_edit_mode).pack(side=tk.LEFT, padx=5)
-        ttk.Radiobutton(mode_frame, text="Удалить", variable=self.edit_mode_var, 
+        ttk.Radiobutton(mode_frame, text="Видалити", variable=self.edit_mode_var, 
                        value='delete', command=self._set_edit_mode).pack(side=tk.LEFT, padx=5)
         
         # Кнопки действий
         actions_frame = ttk.Frame(edit_frame)
         actions_frame.pack(fill=tk.X, pady=5)
         
-        ttk.Button(actions_frame, text="Очистить сеть", 
+        ttk.Button(actions_frame, text="Очистити мережу", 
                   command=self._clear_network).pack(side=tk.LEFT, padx=5)
-        ttk.Button(actions_frame, text="Загрузить пример", 
+        ttk.Button(actions_frame, text="Завантажити приклад", 
                   command=self._load_sample_network).pack(side=tk.LEFT, padx=5)
-        ttk.Button(actions_frame, text="Сохранить изменения", 
+        ttk.Button(actions_frame, text="Зберегти зміни", 
                   command=self._save_changes).pack(side=tk.LEFT, padx=5)
-        ttk.Button(actions_frame, text="Анализ связности", 
+        ttk.Button(actions_frame, text="Аналіз зв'язності", 
                   command=self._analyze_connectivity).pack(side=tk.LEFT, padx=5)
     
     def _create_control_panel(self):
         """Создает панель управления визуализацией"""
-        control_frame = ttk.LabelFrame(self.frame, text="Управление визуализацией")
+        control_frame = ttk.LabelFrame(self.frame, text="Управління візуалізацією")
         control_frame.pack(fill=tk.X, padx=5, pady=5)
         
         # Кнопки управления
         buttons_frame = ttk.Frame(control_frame)
         buttons_frame.pack(fill=tk.X, pady=5)
         
-        ttk.Button(buttons_frame, text="Обновить", 
+        ttk.Button(buttons_frame, text="Оновити", 
                   command=self._refresh_visualization).pack(side=tk.LEFT, padx=5)
-        ttk.Button(buttons_frame, text="Экспорт для анализа надежности", 
+        ttk.Button(buttons_frame, text="Експорт для аналізу надійності", 
                   command=self._export_for_reliability_analysis).pack(side=tk.LEFT, padx=5)
-        ttk.Button(buttons_frame, text="Импорт из симулятора", 
+        ttk.Button(buttons_frame, text="Імпорт з симулятора", 
                   command=self._import_from_simulator).pack(side=tk.LEFT, padx=5)
     
     def _set_edit_mode(self):
@@ -220,7 +220,7 @@ class InteractiveNetworkViewer:
         """Добавляет связь между узлами"""
         # Проверяем, что связь не существует
         if to_node in self.editable_network_data['connections'].get(from_node, []):
-            messagebox.showwarning("Предупреждение", "Связь уже существует")
+            messagebox.showwarning("Попередження", "Зв'язок вже існує")
             return
         
         # Добавляем связь в обе стороны
@@ -590,7 +590,7 @@ class InteractiveNetworkViewer:
     
     def _save_changes(self):
         """Сохраняет изменения"""
-        messagebox.showinfo("Информация", "Изменения сохранены в памяти. Используйте 'Экспорт для анализа надежности' для применения изменений.")
+        messagebox.showinfo("Інформація", "Зміни збережені в пам'яті. Використовуйте 'Експорт для аналізу надійності' для застосування змін.")
     
     def _analyze_connectivity(self):
         """Анализирует связность сети"""
@@ -636,12 +636,12 @@ class InteractiveNetworkViewer:
             for i, component in enumerate(components, 1):
                 result_text += f"{i}. {', '.join(sorted(component))}\n"
             
-            messagebox.showinfo("Анализ связности", result_text)
+            messagebox.showinfo("Аналіз зв'язності", result_text)
             
         except ImportError:
-            messagebox.showerror("Ошибка", "NetworkX не установлен")
+            messagebox.showerror("Помилка", "NetworkX не встановлено")
         except Exception as e:
-            messagebox.showerror("Ошибка", f"Ошибка при анализе связности: {e}")
+            messagebox.showerror("Помилка", f"Помилка при аналізі зв'язності: {e}")
     
     def _export_for_reliability_analysis(self):
         """Экспортирует данные для анализа надежности"""
@@ -669,15 +669,15 @@ class InteractiveNetworkViewer:
             dialog.show()
             
         except Exception as e:
-            messagebox.showerror("Ошибка", f"Не удалось запустить анализ надежности: {e}")
+            messagebox.showerror("Помилка", f"Не вдалося запустити аналіз надійності: {e}")
     
     def _import_from_simulator(self):
         """Импортирует данные из симулятора"""
         if hasattr(self.parent, 'simulator') and self.parent.simulator:
             # Здесь нужно реализовать импорт из симулятора
-            messagebox.showinfo("Информация", "Функция импорта из симулятора будет реализована в следующей версии")
+            messagebox.showinfo("Інформація", "Функція імпорту з симулятора буде реалізована в наступній версії")
         else:
-            messagebox.showwarning("Предупреждение", "Симулятор не инициализирован")
+            messagebox.showwarning("Попередження", "Симулятор не ініціалізовано")
     
     def _refresh_visualization(self):
         """Обновляет визуализацию"""

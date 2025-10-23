@@ -31,7 +31,7 @@ class NetworkViewer:
         else:
             # Создание фрейма в военном стиле
             self.frame = self.theme.create_military_frame(parent.root, 
-                                                       title="ВИЗУАЛИЗАТОР СЕТИ")
+                                                       title="ВІЗУАЛІЗАТОР МЕРЕЖІ")
         
         # Создание виджетов
         self._create_widgets()
@@ -42,7 +42,7 @@ class NetworkViewer:
         self.network_fig = Figure(figsize=(8, 6), dpi=100, 
                                 facecolor=self.theme.COLORS['bg_primary'])
         self.network_ax = self.network_fig.add_subplot(111)
-        self.network_ax.set_title("╔═══ ТОПОЛОГИЯ СЕТИ ═══╗", 
+        self.network_ax.set_title("╔═══ ТОПОЛОГІЯ МЕРЕЖІ ═══╗", 
                                 color=self.theme.COLORS['text_secondary'],
                                 fontweight='bold', fontsize=12)
         self.network_ax.set_aspect('equal')
@@ -63,25 +63,25 @@ class NetworkViewer:
         control_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=(10, 0), padx=10)
         
         # Кнопка создания/загрузки сети
-        create_load_button = ttk.Button(control_frame, text="╔═══ СОЗДАТЬ/ЗАГРУЗИТЬ СЕТЬ ═══╗", 
+        create_load_button = ttk.Button(control_frame, text="╔═══ СТВОРИТИ/ЗАВАНТАЖИТИ МЕРЕЖУ ═══╗", 
                                        command=self._open_network_dialog,
                                        style='BloodAngels.TButton')
         create_load_button.pack(side=tk.LEFT, padx=(0, 5))
         
         # Кнопка обновления
-        refresh_button = ttk.Button(control_frame, text="╔═══ ОБНОВИТЬ ═══╗", 
+        refresh_button = ttk.Button(control_frame, text="╔═══ ОНОВИТИ ═══╗", 
                                    command=self._refresh_network,
                                    style='BloodAngels.TButton')
         refresh_button.pack(side=tk.LEFT, padx=5)
         
         # Кнопка сохранения
-        save_button = ttk.Button(control_frame, text="╔═══ СОХРАНИТЬ ═══╗", 
+        save_button = ttk.Button(control_frame, text="╔═══ ЗБЕРЕГТИ ═══╗", 
                                 command=self._save_network_image,
                                 style='BloodAngels.Gold.TButton')
         save_button.pack(side=tk.LEFT, padx=5)
         
         # Информация о сети
-        self.network_info_var = tk.StringVar(value="╔═══ СЕТЬ НЕ ЗАГРУЖЕНА ═══╗")
+        self.network_info_var = tk.StringVar(value="╔═══ МЕРЕЖА НЕ ЗАВАНТАЖЕНА ═══╗")
         info_label = ttk.Label(control_frame, textvariable=self.network_info_var,
                              style='BloodAngels.TLabel')
         info_label.pack(side=tk.RIGHT)
@@ -119,7 +119,7 @@ class NetworkViewer:
             
             # Сбрасываем информацию о сети
             if hasattr(self, 'network_info_var'):
-                self.network_info_var.set("╔═══ СЕТЬ НЕ ЗАГРУЖЕНА ═══╗")
+                self.network_info_var.set("╔═══ МЕРЕЖА НЕ ЗАВАНТАЖЕНА ═══╗")
             
             # Сбрасываем данные сети
             self.network = None
@@ -241,7 +241,7 @@ class NetworkViewer:
         nx.draw_networkx_labels(G, pos, font_size=8, font_color='black', ax=self.network_ax)
         
         # Настройка графика
-        self.network_ax.set_title("╔═══ ТОПОЛОГИЯ СЕТИ ═══╗", 
+        self.network_ax.set_title("╔═══ ТОПОЛОГІЯ МЕРЕЖІ ═══╗", 
                                 color=self.theme.COLORS['text_secondary'],
                                 fontweight='bold', fontsize=12)
         self.network_ax.set_aspect('equal')
@@ -285,7 +285,7 @@ class NetworkViewer:
     def _update_network_info(self):
         """Обновляет информацию о сети"""
         if not self.network:
-            self.network_info_var.set("Сеть не загружена")
+            self.network_info_var.set("Мережа не завантажена")
             return
         
         # Проверяем тип сети и получаем метрики соответственно
@@ -364,7 +364,7 @@ class NetworkViewer:
     def _show_default_prompt(self):
         """Показывает промпт по умолчанию когда сеть не загружена"""
         self.network_ax.clear()
-        self.network_ax.set_title("╔═══ ТОПОЛОГИЯ СЕТИ ═══╗", 
+        self.network_ax.set_title("╔═══ ТОПОЛОГІЯ МЕРЕЖІ ═══╗", 
                                 color=self.theme.COLORS['text_secondary'],
                                 fontweight='bold', fontsize=12)
         

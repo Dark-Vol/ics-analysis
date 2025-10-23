@@ -58,17 +58,17 @@ class ControlPanel:
         
         # Вкладка "Сеть"
         self.network_frame = ttk.Frame(self.notebook, style='BloodAngels.TFrame')
-        self.notebook.add(self.network_frame, text="╔═══ СЕТЬ ═══╗")
+        self.notebook.add(self.network_frame, text="╔═══ МЕРЕЖА ═══╗")
         self._create_network_tab()
         
         # Вкладка "Симуляция"
         self.simulation_frame = ttk.Frame(self.notebook, style='BloodAngels.TFrame')
-        self.notebook.add(self.simulation_frame, text="╔═══ СИМУЛЯЦИЯ ═══╗")
+        self.notebook.add(self.simulation_frame, text="╔═══ СИМУЛЯЦІЯ ═══╗")
         self._create_simulation_tab()
         
         # Вкладка "Условия"
         self.conditions_frame = ttk.Frame(self.notebook, style='BloodAngels.TFrame')
-        self.notebook.add(self.conditions_frame, text="╔═══ УСЛОВИЯ ═══╗")
+        self.notebook.add(self.conditions_frame, text="╔═══ УМОВИ ═══╗")
         self._create_conditions_tab()
         
         # Панель кнопок управления
@@ -77,12 +77,12 @@ class ControlPanel:
     def _create_network_tab(self):
         """Создает вкладку настроек сети"""
         # Количество узлов
-        ttk.Label(self.network_frame, text="Количество узлов:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
+        ttk.Label(self.network_frame, text="Кількість вузлів:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
         nodes_spinbox = ttk.Spinbox(self.network_frame, from_=3, to=50, textvariable=self.nodes_var, width=10)
         nodes_spinbox.grid(row=0, column=1, sticky=tk.W, padx=5, pady=5)
         
         # Вероятность соединения
-        ttk.Label(self.network_frame, text="Вероятность соединения:").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
+        ttk.Label(self.network_frame, text="Ймовірність з'єднання:").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
         prob_scale = ttk.Scale(self.network_frame, from_=0.1, to=1.0, orient=tk.HORIZONTAL, 
                               variable=self.connection_prob_var, length=150)
         prob_scale.grid(row=1, column=1, sticky=tk.W, padx=5, pady=5)
@@ -94,19 +94,19 @@ class ControlPanel:
     def _create_simulation_tab(self):
         """Создает вкладку настроек симуляции"""
         # Длительность симуляции
-        ttk.Label(self.simulation_frame, text="Длительность (сек):").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
+        ttk.Label(self.simulation_frame, text="Тривалість (сек):").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
         duration_spinbox = ttk.Spinbox(self.simulation_frame, from_=10, to=1000, 
                                       textvariable=self.duration_var, width=10)
         duration_spinbox.grid(row=0, column=1, sticky=tk.W, padx=5, pady=5)
         
         # Шаг времени
-        ttk.Label(self.simulation_frame, text="Шаг времени (сек):").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
+        ttk.Label(self.simulation_frame, text="Крок часу (сек):").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
         time_step_spinbox = ttk.Spinbox(self.simulation_frame, from_=0.01, to=1.0, 
                                        textvariable=self.time_step_var, width=10, increment=0.01)
         time_step_spinbox.grid(row=1, column=1, sticky=tk.W, padx=5, pady=5)
         
         # Случайное зерно
-        ttk.Label(self.simulation_frame, text="Случайное зерно:").grid(row=2, column=0, sticky=tk.W, padx=5, pady=5)
+        ttk.Label(self.simulation_frame, text="Випадкове зерно:").grid(row=2, column=0, sticky=tk.W, padx=5, pady=5)
         seed_spinbox = ttk.Spinbox(self.simulation_frame, from_=1, to=10000, 
                                   textvariable=self.seed_var, width=10)
         seed_spinbox.grid(row=2, column=1, sticky=tk.W, padx=5, pady=5)
@@ -114,7 +114,7 @@ class ControlPanel:
     def _create_conditions_tab(self):
         """Создает вкладку неблагоприятных условий"""
         # Включить трафик
-        traffic_check = ttk.Checkbutton(self.conditions_frame, text="Включить генерацию трафика", 
+        traffic_check = ttk.Checkbutton(self.conditions_frame, text="Увімкнути генерацію трафіку", 
                                        variable=self.enable_traffic_var)
         traffic_check.grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
         
@@ -134,7 +134,7 @@ class ControlPanel:
         button_frame.pack(fill=tk.X, pady=10, padx=10)
         
         # Кнопка создания системы
-        create_button = ttk.Button(button_frame, text="╔═══ СОЗДАТЬ СИСТЕМУ ═══╗", 
+        create_button = ttk.Button(button_frame, text="╔═══ СТВОРИТИ СИСТЕМУ ═══╗", 
                                   command=self._create_system,
                                   style='BloodAngels.TButton')
         create_button.pack(side=tk.LEFT, padx=(0, 5))
@@ -153,7 +153,7 @@ class ControlPanel:
         self.pause_button.pack(side=tk.LEFT, padx=5)
         
         # Кнопка продолжения
-        self.resume_button = ttk.Button(button_frame, text="╔═══ ПРОДОЛЖИТЬ ═══╗", 
+        self.resume_button = ttk.Button(button_frame, text="╔═══ ПРОДОВЖИТИ ═══╗", 
                                        command=self._resume_simulation, 
                                        state=tk.DISABLED,
                                        style='BloodAngels.TButton')
@@ -167,13 +167,13 @@ class ControlPanel:
         self.stop_button.pack(side=tk.LEFT, padx=5)
         
         # Кнопка сброса
-        reset_button = ttk.Button(button_frame, text="╔═══ СБРОС ═══╗", 
+        reset_button = ttk.Button(button_frame, text="╔═══ СКИНУТИ ═══╗", 
                                 command=self._reset_simulation,
                                 style='BloodAngels.TButton')
         reset_button.pack(side=tk.RIGHT, padx=(5, 0))
         
         # Кнопка генерации отчета
-        report_button = ttk.Button(button_frame, text="╔═══ ОТЧЕТ ═══╗", 
+        report_button = ttk.Button(button_frame, text="╔═══ ЗВІТ ═══╗", 
                                   command=self._generate_report,
                                   style='BloodAngels.TButton')
         report_button.pack(side=tk.RIGHT, padx=(5, 0))

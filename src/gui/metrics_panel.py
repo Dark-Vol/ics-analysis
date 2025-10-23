@@ -34,7 +34,7 @@ class MetricsPanel:
         
         # Вкладка "Текущие метрики"
         self.current_frame = ttk.Frame(self.notebook, style='BloodAngels.TFrame')
-        self.notebook.add(self.current_frame, text="╔═══ ТЕКУЩИЕ ═══╗")
+        self.notebook.add(self.current_frame, text="╔═══ ПОТОЧНІ ═══╗")
         self._create_current_metrics_tab()
         
         # Вкладка "Статистика"
@@ -44,7 +44,7 @@ class MetricsPanel:
         
         # Вкладка "Качество"
         self.quality_frame = ttk.Frame(self.notebook, style='BloodAngels.TFrame')
-        self.notebook.add(self.quality_frame, text="╔═══ КАЧЕСТВО ═══╗")
+        self.notebook.add(self.quality_frame, text="╔═══ ЯКІСТЬ ═══╗")
         self._create_quality_tab()
     
     def _create_current_metrics_tab(self):
@@ -82,14 +82,14 @@ class MetricsPanel:
         self.stats_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
         # Кнопка обновления статистики
-        update_button = ttk.Button(self.stats_frame, text="Обновить статистику", 
+        update_button = ttk.Button(self.stats_frame, text="Оновити статистику", 
                                   command=self._update_statistics)
         update_button.pack(side=tk.BOTTOM, pady=5)
     
     def _create_quality_tab(self):
         """Создает вкладку качества"""
         # Показатель качества
-        quality_label = ttk.Label(self.quality_frame, text="Общий показатель качества:", 
+        quality_label = ttk.Label(self.quality_frame, text="Загальний показник якості:", 
                                  font=("Arial", 10, "bold"))
         quality_label.pack(side=tk.TOP, pady=10)
         
@@ -103,12 +103,12 @@ class MetricsPanel:
         self.quality_progress.pack(side=tk.TOP, pady=10)
         
         # Описание качества
-        self.quality_description = ttk.Label(self.quality_frame, text="Качество не оценено", 
+        self.quality_description = ttk.Label(self.quality_frame, text="Якість не оцінена", 
                                             wraplength=200, justify=tk.CENTER)
         self.quality_description.pack(side=tk.TOP, pady=10)
         
         # Кнопка расчета качества
-        calculate_button = ttk.Button(self.quality_frame, text="Рассчитать качество", 
+        calculate_button = ttk.Button(self.quality_frame, text="Розрахувати якість", 
                                      command=self._calculate_quality)
         calculate_button.pack(side=tk.BOTTOM, pady=10)
     
@@ -210,7 +210,7 @@ class MetricsPanel:
         if not hasattr(self.parent, 'simulator') or not self.parent.simulator:
             self.quality_var.set("0.000")
             self.quality_progress['value'] = 0
-            self.quality_description.config(text="Качество не оценено")
+            self.quality_description.config(text="Якість не оцінена")
             return
         
         # Получение показателя качества
@@ -256,5 +256,5 @@ class MetricsPanel:
         # Сброс качества
         self.quality_var.set("0.000")
         self.quality_progress['value'] = 0
-        self.quality_description.config(text="Качество не оценено", foreground="black")
+        self.quality_description.config(text="Якість не оцінена", foreground="black")
 

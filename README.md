@@ -124,6 +124,7 @@ cd ics-analysis
 pip install -r requirements.txt
 pip install python-docx  # Для генерации отчетов Word
 ```
+
 3. **Проверка установки**:
 ```bash
 python main.py --help

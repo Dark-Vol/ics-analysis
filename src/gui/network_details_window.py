@@ -92,10 +92,10 @@ class NetworkDetailsWindow:
     def _create_overview_tab(self):
         """Создает вкладку обзора"""
         overview_frame = ttk.Frame(self.notebook)
-        self.notebook.add(overview_frame, text="Обзор")
+        self.notebook.add(overview_frame, text="Огляд")
         
         # Информация о сети
-        info_frame = ttk.LabelFrame(overview_frame, text="Информация о сети", padding=10)
+        info_frame = ttk.LabelFrame(overview_frame, text="Інформація про мережу", padding=10)
         info_frame.pack(fill=tk.X, pady=10)
         
         if self.network_data:
@@ -113,7 +113,7 @@ class NetworkDetailsWindow:
         
         # Основные метрики
         if self.network:
-            metrics_frame = ttk.LabelFrame(overview_frame, text="Основные метрики", padding=10)
+            metrics_frame = ttk.LabelFrame(overview_frame, text="Основні метрики", padding=10)
             metrics_frame.pack(fill=tk.X, pady=10)
             
             network_metrics = self.network.get_network_metrics()
@@ -132,10 +132,10 @@ class NetworkDetailsWindow:
     def _create_nodes_tab(self):
         """Создает вкладку с информацией об узлах"""
         nodes_frame = ttk.Frame(self.notebook)
-        self.notebook.add(nodes_frame, text="Узлы")
+        self.notebook.add(nodes_frame, text="Вузли")
         
         if not self.network:
-            no_data_label = tk.Label(nodes_frame, text="Сеть не загружена", 
+            no_data_label = tk.Label(nodes_frame, text="Мережа не завантажена", 
                                    bg=self.theme.COLORS['bg_primary'])
             no_data_label.pack(expand=True)
             return
@@ -148,9 +148,9 @@ class NetworkDetailsWindow:
         self.nodes_tree.heading('id', text='ID')
         self.nodes_tree.heading('x', text='X координата')
         self.nodes_tree.heading('y', text='Y координата')
-        self.nodes_tree.heading('capacity', text='Пропускная способность')
-        self.nodes_tree.heading('reliability', text='Надежность')
-        self.nodes_tree.heading('processing_delay', text='Задержка обработки')
+        self.nodes_tree.heading('capacity', text='Пропускна здатність')
+        self.nodes_tree.heading('reliability', text='Надійність')
+        self.nodes_tree.heading('processing_delay', text='Затримка обробки')
         
         self.nodes_tree.column('id', width=50)
         self.nodes_tree.column('x', width=100)
