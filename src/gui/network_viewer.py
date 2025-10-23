@@ -98,6 +98,39 @@ class NetworkViewer:
         else:
             self.parent.update_idletasks()
     
+    def reset_network_display(self):
+        """Сбрасывает отображение сети"""
+        try:
+            # Очищаем график сети
+            if hasattr(self, 'network_ax'):
+                self.network_ax.clear()
+                self.network_ax.set_title("ТОПОЛОГИЯ СЕТИ", 
+                                        fontsize=14, fontweight='bold', 
+                                        color=self.theme.COLORS['text_primary'])
+                self.network_ax.set_aspect('equal')
+                self.network_ax.axis('off')
+                
+                # Добавляем заглушку
+                self.network_ax.text(0.5, 0.5, "СЕТЬ НЕ ЗАГРУЖЕНА", 
+                                   ha='center', va='center', 
+                                   fontsize=16, fontweight='bold',
+                                   color=self.theme.COLORS['text_secondary'],
+                                   transform=self.network_ax.transAxes)
+            
+            # Сбрасываем информацию о сети
+            if hasattr(self, 'network_info_var'):
+                self.network_info_var.set("╔═══ СЕТЬ НЕ ЗАГРУЖЕНА ═══╗")
+            
+            # Сбрасываем данные сети
+            self.network = None
+            
+            # Перерисовываем canvas
+            if hasattr(self, 'network_canvas'):
+                self.network_canvas.draw_idle()
+                
+        except Exception as e:
+            print(f"Ошибка при сбросе отображения сети: {str(e)}")
+    
     def _draw_network(self):
         """Отрисовывает сеть"""
         if not self.network:
