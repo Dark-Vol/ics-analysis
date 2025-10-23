@@ -205,14 +205,22 @@ class MainWindow:
         self.topology_frame = ttk.Frame(self.viz_notebook)
         self.viz_notebook.add(self.topology_frame, text="🕸️ Топология")
         
-        # Создание интерактивного визуализатора сети
+        # Создание виправленого інтерактивного візуалізатора мережі
         try:
-            from .interactive_network_viewer import InteractiveNetworkViewer
-            self.network_viewer = InteractiveNetworkViewer(self, self.topology_frame)
+            from .fixed_interactive_network_viewer import FixedInteractiveNetworkViewer
+            self.network_viewer = FixedInteractiveNetworkViewer(self, self.topology_frame)
         except ImportError:
-            # Fallback на обычный визуализатор
-            from .network_viewer import NetworkViewer
-            self.network_viewer = NetworkViewer(self, self.topology_frame)
+            try:
+                from .enhanced_interactive_network_viewer import EnhancedInteractiveNetworkViewer
+                self.network_viewer = EnhancedInteractiveNetworkViewer(self, self.topology_frame)
+            except ImportError:
+                try:
+                    from .interactive_network_viewer import InteractiveNetworkViewer
+                    self.network_viewer = InteractiveNetworkViewer(self, self.topology_frame)
+                except ImportError:
+                    # Fallback на обычный визуализатор
+                    from .network_viewer import NetworkViewer
+                    self.network_viewer = NetworkViewer(self, self.topology_frame)
         
         # Вкладка "Анализ надежности"
         self.reliability_frame = ttk.Frame(self.viz_notebook)
