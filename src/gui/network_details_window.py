@@ -392,6 +392,68 @@ class NetworkDetailsWindow:
         self.metrics_canvas.draw()
         self.metrics_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
     
+    def reset_charts(self):
+        """Сбрасывает все графики в окне деталей сети"""
+        try:
+            # Сброс графика визуализации сети
+            if hasattr(self, 'viz_ax'):
+                self.viz_ax.clear()
+                self.viz_ax.set_title("ВИЗУАЛИЗАЦИЯ СЕТИ", 
+                                    fontsize=14, fontweight='bold', 
+                                    color=self.theme.COLORS['text_primary'])
+                self.viz_ax.set_aspect('equal')
+                self.viz_ax.axis('off')
+                
+                # Добавляем заглушку
+                self.viz_ax.text(0.5, 0.5, "СЕТЬ НЕ ЗАГРУЖЕНА", 
+                               ha='center', va='center', 
+                               fontsize=16, fontweight='bold',
+                               color=self.theme.COLORS['text_secondary'],
+                               transform=self.viz_ax.transAxes)
+                
+                if hasattr(self, 'viz_canvas'):
+                    self.viz_canvas.draw_idle()
+            
+            # Сброс графиков метрик
+            if hasattr(self, 'nodes_reliability_ax'):
+                self.nodes_reliability_ax.clear()
+                self.nodes_reliability_ax.set_title("Надежность узлов", 
+                                                  fontsize=10, fontweight='bold')
+                self.nodes_reliability_ax.text(0.5, 0.5, "Нет данных", 
+                                             ha='center', va='center', 
+                                             transform=self.nodes_reliability_ax.transAxes)
+            
+            if hasattr(self, 'nodes_capacity_ax'):
+                self.nodes_capacity_ax.clear()
+                self.nodes_capacity_ax.set_title("Пропускная способность узлов", 
+                                               fontsize=10, fontweight='bold')
+                self.nodes_capacity_ax.text(0.5, 0.5, "Нет данных", 
+                                          ha='center', va='center', 
+                                          transform=self.nodes_capacity_ax.transAxes)
+            
+            if hasattr(self, 'links_reliability_ax'):
+                self.links_reliability_ax.clear()
+                self.links_reliability_ax.set_title("Надежность связей", 
+                                                  fontsize=10, fontweight='bold')
+                self.links_reliability_ax.text(0.5, 0.5, "Нет данных", 
+                                             ha='center', va='center', 
+                                             transform=self.links_reliability_ax.transAxes)
+            
+            if hasattr(self, 'links_bandwidth_ax'):
+                self.links_bandwidth_ax.clear()
+                self.links_bandwidth_ax.set_title("Пропускная способность связей", 
+                                                fontsize=10, fontweight='bold')
+                self.links_bandwidth_ax.text(0.5, 0.5, "Нет данных", 
+                                           ha='center', va='center', 
+                                           transform=self.links_bandwidth_ax.transAxes)
+            
+            # Перерисовка canvas метрик
+            if hasattr(self, 'metrics_canvas'):
+                self.metrics_canvas.draw_idle()
+                
+        except Exception as e:
+            print(f"Ошибка при сбросе графиков в окне деталей сети: {str(e)}")
+    
     def _plot_nodes_reliability(self):
         """Строит график распределения надежности узлов"""
         if not self.network:
