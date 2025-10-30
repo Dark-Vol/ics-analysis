@@ -4,9 +4,9 @@
 Утилиты для работы с приложением
 """
 
+from .incidence_matrix import IncidenceMatrixManager
 
-
-
+__all__ = ['IncidenceMatrixManager']
 
 
 
