@@ -7,8 +7,9 @@
 from .performance_analyzer import PerformanceAnalyzer
 from .reliability_analyzer import ReliabilityAnalyzer
 from .traffic_analyzer import TrafficAnalyzer
+from .birnbaum_reliability import BirnbaumReliabilityAnalyzer
 
-__all__ = ['PerformanceAnalyzer', 'ReliabilityAnalyzer', 'TrafficAnalyzer']
+__all__ = ['PerformanceAnalyzer', 'ReliabilityAnalyzer', 'TrafficAnalyzer', 'BirnbaumReliabilityAnalyzer']
 
 
 
