@@ -53,6 +53,7 @@ class FixedInteractiveNetworkViewer:
         self.drag_node = None
         self.drag_start_pos = None
         self.edit_mode = 'view'  # 'view', 'add_node', 'add_edge', 'delete'
+        self.edge_start_node = None  # Узел для начала создания связи
         
         # Данные для редактирования в форматі словника Python
         self.network_dict = {}  # {'a': ['b', 'c'], 'b': ['c'], 'c': []}
@@ -134,6 +135,10 @@ class FixedInteractiveNetworkViewer:
                   command=self._clear_network).pack(side=tk.LEFT, padx=5)
         ttk.Button(actions_frame, text="Завантажити приклад", 
                   command=self._load_sample_network).pack(side=tk.LEFT, padx=5)
+        ttk.Button(actions_frame, text="Тестова мережа", 
+                  command=self.create_test_network).pack(side=tk.LEFT, padx=5)
+        ttk.Button(actions_frame, text="Діагностика", 
+                  command=self._run_diagnostics).pack(side=tk.LEFT, padx=5)
         ttk.Button(actions_frame, text="Зберегти зміни", 
                   command=self._save_changes).pack(side=tk.LEFT, padx=5)
         ttk.Button(actions_frame, text="Аналіз зв'язності", 
@@ -313,19 +318,24 @@ class FixedInteractiveNetworkViewer:
         """Начинает создание связи"""
         # Находим ближайший узел
         node = self._find_nearest_node(x, y)
-        if node:
+        if node is not None:
             if not hasattr(self, 'edge_start_node'):
                 self.edge_start_node = node
                 self._select_node(node)
             else:
                 # Создаем связь
-                if self.edge_start_node != node:
+                if self.edge_start_node is not None and self.edge_start_node != node:
                     self._add_edge(self.edge_start_node, node)
                 self.edge_start_node = None
                 self._clear_selection()
     
     def _add_edge(self, from_node, to_node):
         """Добавляет связь между узлами"""
+        # Проверяем валидность узлов
+        if from_node is None or to_node is None:
+            messagebox.showerror("Помилка", "Неможливо створити зв'язок з невалідними вузлами")
+            return
+        
         # Проверяем, что связь не существует
         if to_node in self.network_dict.get(from_node, []):
             messagebox.showwarning("Попередження", "Зв'язок вже існує")
@@ -354,19 +364,29 @@ class FixedInteractiveNetworkViewer:
         """Обновляет NetworkX граф из словаря Python"""
         self.G.clear()
         
-        # Добавляем узлы
+        # Добавляем узлы (пропускаем None значения)
         for node_id in self.network_dict.keys():
-            self.G.add_node(node_id)
+            if node_id is not None:
+                self.G.add_node(node_id)
         
         # Добавляем связи
+        added_edges = set()  # Для избежания дублирования
         for from_node, connections in self.network_dict.items():
-            for to_node in connections:
-                if from_node < to_node:  # Избегаем дублирования
-                    self.G.add_edge(from_node, to_node)
+            if from_node is not None:
+                for to_node in connections:
+                    if to_node is not None:
+                        # Создаем уникальный ключ для ребра
+                        edge_key = tuple(sorted([from_node, to_node]))
+                        if edge_key not in added_edges:
+                            self.G.add_edge(from_node, to_node)
+                            added_edges.add(edge_key)
         
         # Вычисляем позиции с помощью force-directed layout
         if len(self.G.nodes()) > 0:
-            self.pos = nx.spring_layout(self.G, k=3, iterations=50)
+            pos_dict = nx.spring_layout(self.G, k=3, iterations=50)
+            # Преобразуем numpy массивы в кортежи для безопасности
+            self.pos = {node: tuple(pos) for node, pos in pos_dict.items()}
+            
     
     def _delete_at_position(self, x, y):
         """Удаляет элемент в указанной позиции"""
@@ -420,7 +440,8 @@ class FixedInteractiveNetworkViewer:
             from_pos = self.pos.get(from_node)
             to_pos = self.pos.get(to_node)
             
-            if from_pos and to_pos:
+            # Проверяем, что позиции существуют
+            if from_pos is not None and to_pos is not None:
                 # Вычисляем расстояние от точки до линии
                 distance = self._point_to_line_distance(x, y, from_pos[0], from_pos[1], 
                                                       to_pos[0], to_pos[1])
@@ -531,18 +552,6 @@ class FixedInteractiveNetworkViewer:
         if self.auto_save_enabled and self.db_filename:
             self._auto_save()
     
-    def _get_node_shape(self, degree):
-        """Возвращает форму узла в зависимости от степени"""
-        if degree <= 2:
-            return 'circle'
-        elif degree == 3:
-            return 'triangle'
-        elif degree == 4:
-            return 'square'
-        elif degree == 5:
-            return 'pentagon'
-        else:  # degree >= 6
-            return 'hexagon'
     
     def _draw_network_with_animation(self):
         """Отрисовывает сеть с анимацией"""
@@ -601,6 +610,7 @@ class FixedInteractiveNetworkViewer:
     
     def _draw_edges(self):
         """Отрисовывает связи"""
+        edges_count = 0
         for edge in self.G.edges():
             from_node, to_node = edge
             from_pos = self.pos.get(from_node)
@@ -608,6 +618,8 @@ class FixedInteractiveNetworkViewer:
             
             if from_pos is None or to_pos is None:
                 continue
+            
+            edges_count += 1
             
             # Определяем цвет связи
             edge_color = self.theme.COLORS['text_secondary']
@@ -627,15 +639,16 @@ class FixedInteractiveNetworkViewer:
             # Отрисовываем линию
             self.network_ax.plot([from_pos[0], to_pos[0]], [from_pos[1], to_pos[1]], 
                                color=edge_color, linewidth=linewidth, alpha=alpha)
+        
+        
     
     def _draw_nodes(self):
-        """Отрисовывает узлы с формами в зависимости от степени"""
+        """Отрисовывает узлы как круги"""
         for node_id in self.G.nodes():
             if node_id not in self.pos:
                 continue
                 
             x, y = self.pos[node_id]
-            degree = self.G.degree(node_id)
             
             # Определяем цвет узла
             if node_id in self.selected_nodes:
@@ -648,40 +661,16 @@ class FixedInteractiveNetworkViewer:
                 node_color = self.theme.COLORS['text_secondary']
                 alpha = 0.8
             
-            # Определяем форму узла в зависимости от степени
-            shape = self._get_node_shape(degree)
-            
             # Зменшені розміри вузлів
             node_size = 0.15  # Зменшено з 0.3 до 0.15
             
-            # Отрисовываем узел в зависимости от формы
-            if shape == 'circle':
-                circle = patches.Circle((x, y), node_size, color=node_color, alpha=alpha)
-                self.network_ax.add_patch(circle)
-            elif shape == 'triangle':
-                triangle = patches.RegularPolygon((x, y), 3, radius=node_size, 
-                                                color=node_color, alpha=alpha)
-                self.network_ax.add_patch(triangle)
-            elif shape == 'square':
-                square = patches.Rectangle((x-node_size, y-node_size), node_size*2, node_size*2, 
-                                         color=node_color, alpha=alpha)
-                self.network_ax.add_patch(square)
-            elif shape == 'pentagon':
-                pentagon = patches.RegularPolygon((x, y), 5, radius=node_size, 
-                                                color=node_color, alpha=alpha)
-                self.network_ax.add_patch(pentagon)
-            else:  # hexagon
-                hexagon = patches.RegularPolygon((x, y), 6, radius=node_size, 
-                                               color=node_color, alpha=alpha)
-                self.network_ax.add_patch(hexagon)
+            # Отрисовываем узел как круг
+            circle = patches.Circle((x, y), node_size, color=node_color, alpha=alpha)
+            self.network_ax.add_patch(circle)
             
             # Добавляем текст с ID узла (зменшений шрифт)
             self.network_ax.text(x, y, node_id, ha='center', va='center', 
                                fontsize=6, fontweight='bold', color='white')  # Зменшено з 8 до 6
-            
-            # Добавляем информацию о степени
-            self.network_ax.text(x+node_size*1.5, y+node_size*1.5, f"d:{degree}", ha='center', va='center', 
-                               fontsize=4, color='yellow')  # Зменшено з 6 до 4
     
     def _add_legend(self):
         """Добавляет легенду"""
@@ -898,6 +887,7 @@ class FixedInteractiveNetworkViewer:
     
     def load_network_from_model(self, network_model: NetworkModel):
         """Загружает сеть из модели NetworkModel"""
+        
         self.network_dict = {}
         
         # Преобразуем узлы
@@ -931,10 +921,100 @@ class FixedInteractiveNetworkViewer:
         
         # Обновляем отображение
         self._draw_network()
-    
+        
+        return self.network_dict
     def get_network_data(self):
         """Возвращает данные сети для экспорта"""
         return self.network_dict.copy()
+    
+    def create_test_network(self):
+        """Создает тестовую сеть для проверки отображения"""
+        self.network_dict = {
+            'a': ['b', 'c'],
+            'b': ['c', 'd'],
+            'c': ['d'],
+            'd': []
+        }
+        
+        
+        # Обновляем NetworkX граф
+        self._update_networkx_graph()
+        
+        # Обновляем отображение
+        self._draw_network()
+        
+        return self.network_dict
+    
+    def debug_network_creation(self, network_model):
+        """Діагностика створення мережі з моделі"""
+        print("=== ДІАГНОСТИКА СТВОРЕННЯ МЕРЕЖІ ===")
+        print(f"Кількість вузлів у моделі: {len(network_model.nodes)}")
+        print(f"Кількість зв'язків у моделі: {len(network_model.links)}")
+        
+        # Показуємо всі зв'язки
+        for i, link in enumerate(network_model.links):
+            print(f"Зв'язок {i}: {link.source} -> {link.target}")
+        
+        # Конвертуємо в словник
+        self.network_dict = {}
+        
+        # Преобразуем узлы
+        for i, node in enumerate(network_model.nodes):
+            node_id = f"node_{i}"
+            self.network_dict[node_id] = []
+        
+        print(f"Словник після створення вузлів: {self.network_dict}")
+        
+        # Преобразуем связи
+        for link in network_model.links:
+            if isinstance(link, str):
+                continue
+            
+            source = getattr(link, 'source', 0)
+            target = getattr(link, 'target', 1)
+            source_id = f"node_{source}"
+            target_id = f"node_{target}"
+            
+            print(f"Додаємо зв'язок: {source_id} -> {target_id}")
+            
+            # Добавляем связи в обе стороны
+            if source_id not in self.network_dict:
+                self.network_dict[source_id] = []
+            if target_id not in self.network_dict:
+                self.network_dict[target_id] = []
+            
+            if target_id not in self.network_dict[source_id]:
+                self.network_dict[source_id].append(target_id)
+            if source_id not in self.network_dict[target_id]:
+                self.network_dict[target_id].append(source_id)
+        
+        print(f"Фінальний словник: {self.network_dict}")
+        
+        # Обновляем NetworkX граф
+        self._update_networkx_graph()
+        
+        # Обновляем отображение
+        self._draw_network()
+        
+        return self.network_dict
+    
+    def _run_diagnostics(self):
+        """Запускає діагностику поточної мережі"""
+        print("=== ДІАГНОСТИКА ПОТОЧНОЇ МЕРЕЖІ ===")
+        print(f"Словник мережі: {self.network_dict}")
+        print(f"Кількість вузлів у словнику: {len(self.network_dict)}")
+        
+        total_connections = sum(len(connections) for connections in self.network_dict.values())
+        print(f"Загальна кількість зв'язків у словнику: {total_connections}")
+        
+        print(f"NetworkX граф: {len(self.G.nodes())} вузлів, {len(self.G.edges())} ребер")
+        print(f"Вузли NetworkX: {list(self.G.nodes())}")
+        print(f"Ребра NetworkX: {list(self.G.edges())}")
+        
+        print(f"Позиції вузлів: {self.pos}")
+        
+        # Перемальовуємо для діагностики
+        self._draw_network()
     
     def update_network(self, network):
         """Обновляет отображение сети (совместимость с NetworkViewer)"""
