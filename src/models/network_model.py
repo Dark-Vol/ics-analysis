@@ -167,6 +167,21 @@ class NetworkModel:
         if not self.graph.has_edge(link.source, link.target):
             self.links.append(link)
             self.graph.add_edge(link.source, link.target, **link.__dict__)
+    
+    def get_network_summary(self) -> str:
+        """Получить текстовое описание сети"""
+        metrics = self.get_network_metrics()
+        
+        summary = f"""
+=== Сетевая модель ===
+Узлы: {metrics.get('nodes_count', 0)}
+Связи: {metrics.get('links_count', 0)}
+Плотность: {metrics.get('density', 0):.3f}
+Средний коэффициент кластеризации: {metrics.get('average_clustering', 0):.3f}
+Диаметр: {metrics.get('diameter', 0)}
+Средняя длина пути: {metrics.get('average_path_length', 0):.3f}
+"""
+        return summary.strip()
 
 
 
