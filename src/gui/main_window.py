@@ -809,13 +809,13 @@ class MainWindow:
                 from ..models.performance_metrics import MetricsSnapshot
                 snapshot = MetricsSnapshot(
                     timestamp=self.simulator.current_time,
-                    throughput=current_metrics.get('throughput', 0),
-                    latency=current_metrics.get('latency', 0),
-                    reliability=current_metrics.get('reliability', 0),
-                    availability=current_metrics.get('availability', 0),
-                    packet_loss=current_metrics.get('packet_loss', 0),
-                    jitter=current_metrics.get('jitter', 0),
-                    energy_efficiency=current_metrics.get('energy_efficiency', 0)
+                    throughput=getattr(current_metrics, 'throughput', 0),
+                    latency=getattr(current_metrics, 'latency', 0),
+                    reliability=getattr(current_metrics, 'reliability', 0),
+                    availability=getattr(current_metrics, 'availability', 0),
+                    packet_loss=getattr(current_metrics, 'packet_loss', 0),
+                    jitter=getattr(current_metrics, 'jitter', 0),
+                    energy_efficiency=getattr(current_metrics, 'energy_efficiency', 0)
                 )
                 self.metrics_panel.update_metrics(snapshot)
     
@@ -958,10 +958,6 @@ class MainWindow:
                 
                 # Обновление визуализатора сети
                 self.network_viewer.update_network(network)
-                
-                # Загрузка сети в интерактивный визуализатор (если доступен)
-                if hasattr(self.network_viewer, 'load_network_from_model'):
-                    self.network_viewer.load_network_from_model(network)
                 
                 # Создание симулятора для загруженной сети
                 analysis_time = result.get('analysis_time', 300)  # 5 минут по умолчанию
