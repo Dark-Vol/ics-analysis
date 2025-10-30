@@ -294,7 +294,7 @@ class InteractiveNetworkViewer:
                 from_pos = self._get_node_position(from_node)
                 to_pos = self._get_node_position(to_node)
                 
-                if from_pos and to_pos:
+                if from_pos is not None and to_pos is not None:
                     # Вычисляем расстояние от точки до линии
                     distance = self._point_to_line_distance(x, y, from_pos[0], from_pos[1], 
                                                           to_pos[0], to_pos[1])
