@@ -77,88 +77,88 @@ def configure_blood_angels_theme(root):
     
     # Стиль для Frame
     style.configure('BloodAngels.TFrame',
-                   background=BLOOD_ANGELS_COLORS['bg_secondary'],
-                   relief='raised',
-                   borderwidth=2)
+                    background=BLOOD_ANGELS_COLORS['bg_secondary'],
+                    relief='raised',
+                    borderwidth=2)
     
     # Стиль для Label
     style.configure('BloodAngels.TLabel',
-                   background=BLOOD_ANGELS_COLORS['bg_secondary'],
-                   foreground=BLOOD_ANGELS_COLORS['text_primary'],
-                   font=MILITARY_FONTS['body'])
+                    background=BLOOD_ANGELS_COLORS['bg_secondary'],
+                    foreground=BLOOD_ANGELS_COLORS['text_primary'],
+                    font=MILITARY_FONTS['body'])
     
     # Стиль для заголовков
     style.configure('BloodAngels.Title.TLabel',
-                   background=BLOOD_ANGELS_COLORS['bg_secondary'],
-                   foreground=BLOOD_ANGELS_COLORS['text_secondary'],
-                   font=MILITARY_FONTS['title'])
+                    background=BLOOD_ANGELS_COLORS['bg_secondary'],
+                    foreground=BLOOD_ANGELS_COLORS['text_secondary'],
+                    font=MILITARY_FONTS['title'])
     
     # Стиль для кнопок
     style.configure('BloodAngels.TButton',
-                   background=BLOOD_ANGELS_COLORS['primary_red'],
-                   foreground=BLOOD_ANGELS_COLORS['text_primary'],
-                   font=MILITARY_FONTS['body'],
-                   borderwidth=2,
-                   relief='raised')
+                    background=BLOOD_ANGELS_COLORS['primary_red'],
+                    foreground=BLOOD_ANGELS_COLORS['text_primary'],
+                    font=MILITARY_FONTS['body'],
+                    borderwidth=2,
+                    relief='raised')
     
     style.map('BloodAngels.TButton',
-             background=[('active', BLOOD_ANGELS_COLORS['secondary_red']),
-                       ('pressed', BLOOD_ANGELS_COLORS['blood_red'])],
-             relief=[('pressed', 'sunken'),
-                    ('active', 'raised')])
+                background=[('active', BLOOD_ANGELS_COLORS['secondary_red']),
+                            ('pressed', BLOOD_ANGELS_COLORS['blood_red'])],
+                            relief=[('pressed', 'sunken'),
+                                    ('active', 'raised')])
     
     # Стиль для золотых кнопок
     style.configure('BloodAngels.Gold.TButton',
-                   background=BLOOD_ANGELS_COLORS['primary_gold'],
-                   foreground=BLOOD_ANGELS_COLORS['primary_black'],
-                   font=MILITARY_FONTS['body'],
-                   borderwidth=2,
-                   relief='raised')
+                    background=BLOOD_ANGELS_COLORS['primary_gold'],
+                    foreground=BLOOD_ANGELS_COLORS['primary_black'],
+                    font=MILITARY_FONTS['body'],
+                    borderwidth=2,
+                    relief='raised')
     
     style.map('BloodAngels.Gold.TButton',
-             background=[('active', BLOOD_ANGELS_COLORS['secondary_gold']),
-                       ('pressed', BLOOD_ANGELS_COLORS['dark_gold'])],
-             relief=[('pressed', 'sunken'),
-                    ('active', 'raised')])
+                background=[('active', BLOOD_ANGELS_COLORS['secondary_gold']),
+                            ('pressed', BLOOD_ANGELS_COLORS['dark_gold'])],
+                            relief=[('pressed', 'sunken'),
+                                    ('active', 'raised')])
     
     # Стиль для Notebook
     style.configure('BloodAngels.TNotebook',
-                   background=BLOOD_ANGELS_COLORS['bg_secondary'],
-                   borderwidth=2)
+                    background=BLOOD_ANGELS_COLORS['bg_secondary'],
+                    borderwidth=2)
     
     style.configure('BloodAngels.TNotebook.Tab',
-                   background=BLOOD_ANGELS_COLORS['bg_panel'],
-                   foreground=BLOOD_ANGELS_COLORS['text_primary'],
-                   padding=[20, 10],
-                   font=MILITARY_FONTS['body'])
+                    background=BLOOD_ANGELS_COLORS['bg_panel'],
+                    foreground=BLOOD_ANGELS_COLORS['text_primary'],
+                    padding=[20, 10],
+                    font=MILITARY_FONTS['body'])
     
     style.map('BloodAngels.TNotebook.Tab',
-             background=[('selected', BLOOD_ANGELS_COLORS['primary_red']),
-                       ('active', BLOOD_ANGELS_COLORS['secondary_red'])],
-             foreground=[('selected', BLOOD_ANGELS_COLORS['text_primary']),
-                       ('active', BLOOD_ANGELS_COLORS['text_primary'])])
+                background=[('selected', BLOOD_ANGELS_COLORS['primary_red']),
+                            ('active', BLOOD_ANGELS_COLORS['secondary_red'])],
+                            foreground=[('selected', BLOOD_ANGELS_COLORS['text_primary']),
+                                        ('active', BLOOD_ANGELS_COLORS['text_primary'])])
     
     # Стиль для Progressbar
     style.configure('BloodAngels.Horizontal.TProgressbar',
-                   background=BLOOD_ANGELS_COLORS['primary_gold'],
-                   troughcolor=BLOOD_ANGELS_COLORS['bg_panel'],
-                   borderwidth=2,
-                   lightcolor=BLOOD_ANGELS_COLORS['primary_gold'],
-                   darkcolor=BLOOD_ANGELS_COLORS['primary_gold'])
+                    background=BLOOD_ANGELS_COLORS['primary_gold'],
+                    troughcolor=BLOOD_ANGELS_COLORS['bg_panel'],
+                    borderwidth=2,
+                    lightcolor=BLOOD_ANGELS_COLORS['primary_gold'],
+                    darkcolor=BLOOD_ANGELS_COLORS['primary_gold'])
     
     # Стиль для Spinbox
     style.configure('BloodAngels.TSpinbox',
-                   fieldbackground=BLOOD_ANGELS_COLORS['bg_panel'],
-                   foreground=BLOOD_ANGELS_COLORS['text_primary'],
-                   borderwidth=2,
-                   arrowcolor=BLOOD_ANGELS_COLORS['text_primary'])
+                    fieldbackground=BLOOD_ANGELS_COLORS['bg_panel'],
+                    foreground=BLOOD_ANGELS_COLORS['text_primary'],
+                    borderwidth=2,
+                    arrowcolor=BLOOD_ANGELS_COLORS['text_primary'])
     
     # Стиль для Scale
     style.configure('BloodAngels.Horizontal.TScale',
-                   background=BLOOD_ANGELS_COLORS['bg_secondary'],
-                   troughcolor=BLOOD_ANGELS_COLORS['bg_panel'],
-                   borderwidth=2,
-                   sliderlength=20)
+                    background=BLOOD_ANGELS_COLORS['bg_secondary'],
+                    troughcolor=BLOOD_ANGELS_COLORS['bg_panel'],
+                    borderwidth=2,
+                    sliderlength=20)
 
 def configure_matplotlib_blood_angels():
     """Настраивает matplotlib для темы приложения"""
@@ -186,14 +186,22 @@ def configure_matplotlib_blood_angels():
 
 def create_military_frame(parent, title="", width=None, height=None):
     """Создает фрейм в военном стиле"""
-    frame = tk.Frame(parent, 
-                    bg=BLOOD_ANGELS_COLORS['bg_panel'],
-                    relief='raised',
-                    borderwidth=2,
-                    highlightbackground=BLOOD_ANGELS_COLORS['primary_gold'],
-                    highlightthickness=1,
-                    width=width,
-                    height=height)
+    # Создаем базовую конфигурацию фрейма
+    frame_config = {
+        'bg': BLOOD_ANGELS_COLORS['bg_panel'],
+        'relief': 'raised',
+        'borderwidth': 2,
+        'highlightbackground': BLOOD_ANGELS_COLORS['primary_gold'],
+        'highlightthickness': 1
+    }
+    
+    # Добавляем width и height только если они указаны
+    if width is not None:
+        frame_config['width'] = width
+    if height is not None:
+        frame_config['height'] = height
+    
+    frame = tk.Frame(parent, **frame_config)
     
     if title:
         title_frame = tk.Frame(frame, bg=BLOOD_ANGELS_COLORS['primary_red'], height=30)
@@ -201,10 +209,10 @@ def create_military_frame(parent, title="", width=None, height=None):
         title_frame.pack_propagate(False)
         
         title_label = tk.Label(title_frame, 
-                              text=f"╔═══ {title} ═══╗",
-                              bg=BLOOD_ANGELS_COLORS['primary_red'],
-                              fg=BLOOD_ANGELS_COLORS['text_primary'],
-                              font=MILITARY_FONTS['monospace'])
+                                text=f"╔═══ {title} ═══╗",
+                                bg=BLOOD_ANGELS_COLORS['primary_red'],
+                                fg=BLOOD_ANGELS_COLORS['text_primary'],
+                                font=MILITARY_FONTS['monospace'])
         title_label.pack(expand=True)
     
     return frame
@@ -230,8 +238,8 @@ def create_status_indicator(parent, text, status='normal', size=(100, 30)):
     }
     
     indicator = tk.Frame(frame, 
-                       bg=status_colors.get(status.lower(), BLOOD_ANGELS_COLORS['text_primary']),
-                       width=5)
+                        bg=status_colors.get(status.lower(), BLOOD_ANGELS_COLORS['text_primary']),
+                        width=5)
     indicator.pack(side=tk.LEFT, fill=tk.Y, padx=2, pady=2)
     
     # Текст
@@ -1153,18 +1161,18 @@ class MainWindow(tk.Frame):
                 reliability_values.append(0.98 + np.random.uniform(-0.03, 0.02))
             
             # Обновляем график надежности компонентов
-            if hasattr(self, 'reliability_component_ax'):
-                self.reliability_component_ax.clear()
-                self.reliability_component_ax.bar(range(len(components)), reliability_values, 
+            if hasattr(self, 'reliability_ax'):
+                self.reliability_ax.clear()
+                self.reliability_ax.bar(range(len(components)), reliability_values, 
                                                 color=BLOOD_ANGELS_COLORS['primary_gold'], alpha=0.7)
-                self.reliability_component_ax.set_title("НАДЕЖНОСТЬ КОМПОНЕНТОВ")
-                self.reliability_component_ax.set_xlabel("Компоненты")
-                self.reliability_component_ax.set_ylabel("Надежность")
-                self.reliability_component_ax.set_ylim(0, 1)
+                self.reliability_ax.set_title("НАДЕЖНОСТЬ КОМПОНЕНТОВ")
+                self.reliability_ax.set_xlabel("Компоненты")
+                self.reliability_ax.set_ylabel("Надежность")
+                self.reliability_ax.set_ylim(0, 1)
                 
                 # Поворачиваем подписи для лучшей читаемости
-                self.reliability_component_ax.set_xticks(range(len(components)))
-                self.reliability_component_ax.set_xticklabels(components, rotation=45, ha='right')
+                self.reliability_ax.set_xticks(range(len(components)))
+                self.reliability_ax.set_xticklabels(components, rotation=45, ha='right')
                 
                 self.reliability_canvas.draw()
             
@@ -1189,13 +1197,13 @@ class MainWindow(tk.Frame):
             sensitivity_values = [num_nodes/50.0, num_links/30.0, 0.7, 0.1]
             
             # Обновляем график чувствительности
-            if hasattr(self, 'whatif_sensitivity_ax'):
-                self.whatif_sensitivity_ax.clear()
-                self.whatif_sensitivity_ax.bar(parameters, sensitivity_values, 
+            if hasattr(self, 'sensitivity_ax'):
+                self.sensitivity_ax.clear()
+                self.sensitivity_ax.bar(parameters, sensitivity_values, 
                                               color=BLOOD_ANGELS_COLORS['primary_gold'], alpha=0.7)
-                self.whatif_sensitivity_ax.set_title("ЧТО-ЕСЛИ ЧУВСТВИТЕЛЬНОСТЬ")
-                self.whatif_sensitivity_ax.set_ylabel("Влияние")
-                self.whatif_sensitivity_ax.set_ylim(0, 1)
+                self.sensitivity_ax.set_title("ЧТО-ЕСЛИ ЧУВСТВИТЕЛЬНОСТЬ")
+                self.sensitivity_ax.set_ylabel("Влияние")
+                self.sensitivity_ax.set_ylim(0, 1)
                 
                 self.whatif_canvas.draw()
             
@@ -1558,6 +1566,9 @@ class MainWindow(tk.Frame):
     
     def _setup_reliability_parameters(self):
         """Настраивает параметры надежности"""
+        if self.system_model is None or self.reliability_analyzer is None:
+            return
+        
         failure_rates = {}
         repair_rates = {}
         
@@ -1575,6 +1586,9 @@ class MainWindow(tk.Frame):
     
     def _setup_whatif_parameters(self):
         """Настраивает параметры What-if анализа"""
+        if self.system_model is None or self.whatif_analyzer is None:
+            return
+        
         parameter_ranges = []
         
         for node_id, node in self.system_model.nodes.items():
@@ -1851,7 +1865,7 @@ class ICSAnalyzer:
         
         return self.results['stress_test']
     
-    def run_whatif_analysis(self, scenarios: List[Dict] = None) -> Dict:
+    def run_whatif_analysis(self, scenarios: Optional[List[Dict]] = None) -> Dict:
         """Запуск What-if анализа"""
         if not self.system_model:
             raise ValueError("Сначала создайте систему")
@@ -1897,6 +1911,9 @@ class ICSAnalyzer:
     
     def _setup_reliability_parameters(self):
         """Настройка параметров надежности"""
+        if self.system_model is None or self.reliability_analyzer is None:
+            return
+        
         # Частоты отказов (отказов в час)
         failure_rates = {}
         for node_id in self.system_model.nodes:
@@ -1920,6 +1937,9 @@ class ICSAnalyzer:
     
     def _setup_whatif_parameters(self):
         """Настройка параметров What-if анализа"""
+        if self.system_model is None or self.whatif_analyzer is None:
+            return
+        
         parameter_ranges = []
         
         # Диапазоны для узлов
@@ -1951,6 +1971,9 @@ class ICSAnalyzer:
     
     def _analyze_custom_scenarios(self, scenarios: List[Dict]) -> List:
         """Анализ пользовательских сценариев"""
+        if self.whatif_analyzer is None:
+            return []
+        
         from src.whatif import WhatIfScenario
         
         whatif_scenarios = []
@@ -2056,10 +2079,13 @@ def main():
     
     # Проверяем аргументы командной строки
     if len(sys.argv) > 1:
+        # Проверяем специальный аргумент для GUI
+        if sys.argv[1] in ['critics', 'gui', '-gui', '--gui']:
+            return run_gui_mode()
         # CLI режим
         return run_cli_mode()
     else:
-        # GUI режим
+        # GUI режим по умолчанию
         return run_gui_mode()
 
 
