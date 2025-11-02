@@ -34,13 +34,13 @@ class ControlPanel:
     def _create_variables(self):
         """Создает переменные для управления"""
         # Параметры сети
-        self.nodes_var = tk.StringVar(value="10")
-        self.connection_prob_var = tk.StringVar(value="0.3")
+        self.nodes_var = tk.IntVar(value=10)
+        self.connection_prob_var = tk.DoubleVar(value=0.3)
         
         # Параметры симуляции
-        self.duration_var = tk.StringVar(value="100.0")
-        self.time_step_var = tk.StringVar(value="0.1")
-        self.seed_var = tk.StringVar(value="42")
+        self.duration_var = tk.DoubleVar(value=100.0)
+        self.time_step_var = tk.DoubleVar(value=0.1)
+        self.seed_var = tk.IntVar(value=42)
         
         # Флаги
         self.enable_traffic_var = tk.BooleanVar(value=True)
@@ -52,81 +52,11 @@ class ControlPanel:
     
     def _create_widgets(self):
         """Создает виджеты панели управления в военном стиле"""
-        # Создание notebook для вкладок в стиле Кровавых Ангелов
-        self.notebook = ttk.Notebook(self.frame, style='BloodAngels.TNotebook')
-        self.notebook.pack(fill=tk.X, pady=(10, 10), padx=10)
-        
-        # Вкладка "Сеть"
-        self.network_frame = ttk.Frame(self.notebook, style='BloodAngels.TFrame')
-        self.notebook.add(self.network_frame, text="╔═══ МЕРЕЖА ═══╗")
-        self._create_network_tab()
-        
-        # Вкладка "Симуляция"
-        self.simulation_frame = ttk.Frame(self.notebook, style='BloodAngels.TFrame')
-        self.notebook.add(self.simulation_frame, text="╔═══ СИМУЛЯЦІЯ ═══╗")
-        self._create_simulation_tab()
-        
-        # Вкладка "Условия"
-        self.conditions_frame = ttk.Frame(self.notebook, style='BloodAngels.TFrame')
-        self.notebook.add(self.conditions_frame, text="╔═══ УМОВИ ═══╗")
-        self._create_conditions_tab()
-        
         # Панель кнопок управления
         self._create_control_buttons()
-    
-    def _create_network_tab(self):
-        """Создает вкладку настроек сети"""
-        # Количество узлов
-        ttk.Label(self.network_frame, text="Кількість вузлів:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
-        nodes_spinbox = ttk.Spinbox(self.network_frame, from_=3, to=50, textvariable=self.nodes_var, width=10)
-        nodes_spinbox.grid(row=0, column=1, sticky=tk.W, padx=5, pady=5)
         
-        # Вероятность соединения
-        ttk.Label(self.network_frame, text="Ймовірність з'єднання:").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
-        prob_scale = ttk.Scale(self.network_frame, from_=0.1, to=1.0, orient=tk.HORIZONTAL, 
-                              variable=self.connection_prob_var, length=150)
-        prob_scale.grid(row=1, column=1, sticky=tk.W, padx=5, pady=5)
-        
-        # Отображение значения вероятности
-        prob_label = ttk.Label(self.network_frame, textvariable=self.connection_prob_var)
-        prob_label.grid(row=1, column=2, sticky=tk.W, padx=5, pady=5)
-    
-    def _create_simulation_tab(self):
-        """Создает вкладку настроек симуляции"""
-        # Длительность симуляции
-        ttk.Label(self.simulation_frame, text="Тривалість (сек):").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
-        duration_spinbox = ttk.Spinbox(self.simulation_frame, from_=10, to=1000, 
-                                      textvariable=self.duration_var, width=10)
-        duration_spinbox.grid(row=0, column=1, sticky=tk.W, padx=5, pady=5)
-        
-        # Шаг времени
-        ttk.Label(self.simulation_frame, text="Крок часу (сек):").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
-        time_step_spinbox = ttk.Spinbox(self.simulation_frame, from_=0.01, to=1.0, 
-                                       textvariable=self.time_step_var, width=10, increment=0.01)
-        time_step_spinbox.grid(row=1, column=1, sticky=tk.W, padx=5, pady=5)
-        
-        # Случайное зерно
-        ttk.Label(self.simulation_frame, text="Випадкове зерно:").grid(row=2, column=0, sticky=tk.W, padx=5, pady=5)
-        seed_spinbox = ttk.Spinbox(self.simulation_frame, from_=1, to=10000, 
-                                  textvariable=self.seed_var, width=10)
-        seed_spinbox.grid(row=2, column=1, sticky=tk.W, padx=5, pady=5)
-    
-    def _create_conditions_tab(self):
-        """Создает вкладку неблагоприятных условий"""
-        # Включить трафик
-        traffic_check = ttk.Checkbutton(self.conditions_frame, text="Увімкнути генерацію трафіку", 
-                                       variable=self.enable_traffic_var)
-        traffic_check.grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
-        
-        # Включить отказы
-        failures_check = ttk.Checkbutton(self.conditions_frame, text="Включить моделирование отказов", 
-                                        variable=self.enable_failures_var)
-        failures_check.grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
-        
-        # Включить неблагоприятные условия
-        adverse_check = ttk.Checkbutton(self.conditions_frame, text="Включить неблагоприятные условия", 
-                                       variable=self.enable_adverse_var)
-        adverse_check.grid(row=2, column=0, sticky=tk.W, padx=5, pady=5)
+        # Информационная панель
+        self._create_info_panel()
     
     def _create_control_buttons(self):
         """Создает кнопки управления в военном стиле"""
@@ -178,17 +108,139 @@ class ControlPanel:
                                   style='BloodAngels.TButton')
         report_button.pack(side=tk.RIGHT, padx=(5, 0))
     
+    def _create_info_panel(self):
+        """Создает информационную панель"""
+        info_frame = ttk.LabelFrame(self.frame, text="╔═══ ІНФОРМАЦІЯ ═══╗", 
+                                   style='BloodAngels.TLabelframe')
+        info_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Контейнер с прокруткой
+        canvas = tk.Canvas(info_frame, bg=self.theme.COLORS['bg_secondary'], highlightthickness=0)
+        scrollbar = ttk.Scrollbar(info_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas, style='BloodAngels.TFrame')
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Информационные блоки
+        info_text = """
+╔═══════════════════════════════════╗
+║   СИСТЕМА УПРАВЛІННЯ МЕРЕЖАМИ     ║
+╚═══════════════════════════════════╝
+
+Для створення або завантаження мережі
+використовуйте кнопку "СОЗДАТЬ СЕТЬ"
+в головному вікні програми.
+
+═══════════════════════════════════
+
+КНОПКИ УПРАВЛІННЯ:
+
+• СТВОРИТИ СИСТЕМУ
+  Генерація нової мережевої системи
+  
+• ЗАПУСК
+  Запуск симуляції мережі
+  
+• ПАУЗА
+  Тимчасова зупинка симуляції
+  
+• ПРОДОВЖИТИ
+  Відновлення симуляції
+  
+• СТОП
+  Повна зупинка симуляції
+  
+• СКИНУТИ
+  Скидання всіх налаштувань
+  
+• ЗВІТ
+  Генерація звіту по аналізу
+
+═══════════════════════════════════
+
+ОСНОВНІ ВОЗМОЖНОСТІ:
+
+1. Створення моделі мережі
+   З множинними вузлами та з'єднаннями
+
+2. Симуляція роботи
+   З аналізом продуктивності
+
+3. Моніторинг в реальному часі
+   Графіки та статистика
+
+4. Аналіз надійності
+   Оцінка стійкості системи
+
+5. Стрес-тестування
+   Перевірка при навантаженні
+
+6. Генерація звітів
+   Детальна документація
+
+═══════════════════════════════════
+
+СТАТУС: Очікування команд
+"""
+        
+        info_label = tk.Label(scrollable_frame, 
+                             text=info_text,
+                             bg=self.theme.COLORS['bg_secondary'],
+                             fg=self.theme.COLORS['text_secondary'],
+                             font=self.theme.FONTS['body'],
+                             justify=tk.LEFT,
+                             anchor=tk.NW,
+                             padx=10,
+                             pady=10)
+        info_label.pack(fill=tk.BOTH, expand=True)
+        
+        # Привязка прокрутки колесиком мыши и тачпадом
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        
+        def _on_mousewheel_linux(event):
+            if event.num == 4:
+                canvas.yview_scroll(-1, "units")
+            elif event.num == 5:
+                canvas.yview_scroll(1, "units")
+        
+        # Привязка прокрутки
+        def bind_mousewheel(widget):
+            widget.bind("<MouseWheel>", _on_mousewheel)
+            widget.bind("<Button-4>", _on_mousewheel_linux)
+            widget.bind("<Button-5>", _on_mousewheel_linux)
+        
+        # Привязываем к canvas, scrollable_frame и info_frame
+        bind_mousewheel(canvas)
+        bind_mousewheel(scrollable_frame)
+        bind_mousewheel(info_frame)
+        
+        # Упаковка canvas и scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+    
     def _load_defaults(self):
         """Загружает значения по умолчанию из конфигурации"""
-        self.nodes_var.set(str(self.config.get('network.nodes', 10)))
-        self.connection_prob_var.set(str(self.config.get('network.connections', 0.3)))
-        self.duration_var.set(str(self.config.get('simulation.time_steps', 1000) * self.config.get('simulation.dt', 0.1)))
-        self.time_step_var.set(str(self.config.get('simulation.dt', 0.1)))
-        self.seed_var.set(str(self.config.get('simulation.random_seed', 42)))
+        self.nodes_var.set(self.config.get('network.nodes', 10))
+        self.connection_prob_var.set(self.config.get('network.connections', 0.3))
+        self.duration_var.set(self.config.get('simulation.time_steps', 1000) * self.config.get('simulation.dt', 0.1))
+        self.time_step_var.set(self.config.get('simulation.dt', 0.1))
+        self.seed_var.set(self.config.get('simulation.random_seed', 42))
     
     def _create_system(self):
         """Создает систему"""
-        self.parent.create_system()
+        # Открываем диалог создания сети вместо использования несуществующих переменных
+        if hasattr(self.parent, '_open_network_dialog'):
+            self.parent._open_network_dialog()
+        else:
+            # Fallback - вызываем метод напрямую
+            self.parent.create_system()
     
     def _start_simulation(self):
         """Запускает симуляцию"""
