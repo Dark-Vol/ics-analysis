@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.system_model import create_sample_network, SystemModel
 from src.analytics.connectivity_analyzer import ConnectivityAnalyzer
 from src.models.adverse_conditions import AdverseConditions
-from src.whatif import WhatIfAnalyzer, ParameterType, ParameterRange
+from src.whatif import WhatIfAnalyzer, WhatIfScenario, ParameterType, ParameterRange
 import numpy as np
 
 def demo_enhanced_network_model():
@@ -273,44 +273,54 @@ def demo_comprehensive_analysis():
         }
     ]
     
-    # Комплексный анализ
-    print("Запуск комплексного анализа...")
-    comprehensive_results = analyzer.comprehensive_whatif_analysis(
-        parameter_scenarios=[],
-        adverse_condition_scenarios=adverse_scenarios,
-        failure_scenarios=failure_scenarios,
-        simulation_duration=60
-    )
+    # Комплексный анализ сценариев отказов
+    print("Запуск анализа сценариев отказов...")
     
-    # Результаты анализа
-    print(f"\nРезультаты комплексного анализа:")
-    
-    print(f"  Анализ неблагоприятных условий: {len(comprehensive_results['adverse_conditions_analysis'])} сценариев")
-    for scenario_result in comprehensive_results['adverse_conditions_analysis']:
-        scenario = scenario_result['scenario']
-        result = scenario_result['result']
-        print(f"    {scenario['name']}: {len(result['impact_analysis'])} точек анализа")
-    
-    if comprehensive_results['failure_analysis']:
-        failure_analysis = comprehensive_results['failure_analysis']
-        print(f"  Анализ отказов: {len(failure_analysis['failure_scenarios'])} сценариев")
+    # Создаем сценарии WhatIf для анализа отказов
+    failure_whatif_scenarios = []
+    for scenario in failure_scenarios:
+        changes = {}
+        # Симулируем отказ через изменение надежности до 0
+        for node_id in scenario['failed_nodes']:
+            changes[f"{node_id}_reliability"] = 0.0
+        for link_id in scenario['failed_links']:
+            changes[f"{link_id}_reliability"] = 0.0
         
-        baseline = failure_analysis['baseline_connectivity']
-        print(f"    Базовая связность: {baseline['connectivity_coefficient']:.3f}")
-        print(f"    Базовая устойчивость: {baseline['robustness_score']:.3f}")
+        failure_whatif_scenarios.append(WhatIfScenario(
+            name=scenario['name'],
+            description=f"Сценарий отказа: {scenario['name']}",
+            parameter_changes=changes
+        ))
     
-    # Общая оценка
-    assessment = comprehensive_results['overall_assessment']
-    print(f"\nОбщая оценка:")
-    print(f"  Оценка риска: {assessment['risk_assessment']}")
-    print(f"  Критических параметров: {len(assessment['critical_parameters'])}")
-    print(f"  Высокоэффективных сценариев: {len(assessment['high_impact_scenarios'])}")
-    print(f"  Рекомендаций: {len(assessment['recommendations'])}")
+    # Анализируем неблагоприятные условия через analyze_adverse_conditions_impact
+    print(f"\nАнализ неблагоприятных условий:")
+    for scenario in adverse_scenarios:
+        print(f"  Анализ сценария: {scenario['name']}")
+        adverse_result = analyzer.analyze_adverse_conditions_impact(
+            adverse_condition_type=scenario['condition_type'],
+            intensity_range=scenario['intensity_range'],
+            target_nodes=scenario['target_nodes'],
+            simulation_duration=30
+        )
+        print(f"    Проанализировано интенсивностей: {len(adverse_result['impact_analysis'])}")
     
-    for i, rec in enumerate(assessment['recommendations'], 1):
-        print(f"    {i}. {rec}")
+    # Анализируем сценарии отказов через scenario_analysis
+    if failure_whatif_scenarios:
+        print(f"\nАнализ сценариев отказов:")
+        failure_results = analyzer.scenario_analysis(
+            scenarios=failure_whatif_scenarios,
+            simulation_duration=60
+        )
+        print(f"  Проанализировано сценариев: {len(failure_results)}")
+        for result in failure_results:
+            print(f"    {result.scenario_name}: Изменение пропускной способности: {result.impact_metrics.get('network_throughput_change', 0):.1%}")
     
-    return comprehensive_results
+    print("\nКомплексный анализ завершен")
+    
+    return {
+        'analyzer': analyzer,
+        'system': system
+    }
 
 def main():
     """Основная функция демонстрации"""
