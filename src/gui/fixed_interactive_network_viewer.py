@@ -68,8 +68,8 @@ class FixedInteractiveNetworkViewer:
         self.is_updating = False
         
         # NetworkX граф для візуалізації
-        self.G = nx.Graph()
-        self.pos = {}  # Позиції вузлів
+        self.G: nx.Graph = nx.Graph()
+        self.pos: Dict[str, Tuple[float, float]] = {}  # Позиції вузлів
         
         # Создание виджетов
         self._create_widgets()
@@ -742,7 +742,18 @@ class FixedInteractiveNetworkViewer:
     
     def _save_changes(self):
         """Сохраняет изменения"""
-        messagebox.showinfo("Інформація", "Зміни збережені в пам'яті. Використовуйте 'Зберегти в .db' для збереження в базу даних.")
+        if self.db_filename:
+            # Есть файл базы данных - сохраняем туда
+            try:
+                self._auto_save()
+                messagebox.showinfo("Успіх", "Зміни збережені в базу даних")
+            except Exception as e:
+                messagebox.showerror("Помилка", f"Не вдалося зберегти зміни: {e}")
+        else:
+            # Нет файла - показываем информационное сообщение
+            messagebox.showinfo("Інформація", 
+                "Зміни збережені в пам'яті.\n\n"
+                "Введіть ім'я файлу в 'База даних' та натисніть 'Зберегти в .db' для постійного збереження.")
     
     def _analyze_connectivity(self):
         """Анализирует связность сети"""
@@ -885,36 +896,59 @@ class FixedInteractiveNetworkViewer:
         except Exception as e:
             raise Exception(f"Помилка завантаження з файлу: {e}")
     
-    def load_network_from_model(self, network_model: NetworkModel):
-        """Загружает сеть из модели NetworkModel"""
+    def load_network_from_model(self, network_model):
+        """Загружает сеть из модели NetworkModel или SystemModel"""
         
         self.network_dict = {}
         
-        # Преобразуем узлы
-        for i, node in enumerate(network_model.nodes):
-            node_id = f"node_{i}"
-            self.network_dict[node_id] = []
+        # Преобразуем узлы в зависимости от типа
+        if isinstance(network_model.nodes, dict):
+            # SystemModel: nodes это словарь {id: Node}
+            for node_id, node in network_model.nodes.items():
+                id_str = str(node_id)
+                self.network_dict[id_str] = []
+        elif isinstance(network_model.nodes, list):
+            # NetworkModel: nodes это список
+            for i, node in enumerate(network_model.nodes):
+                node_id = f"node_{i}"
+                self.network_dict[node_id] = []
         
-        # Преобразуем связи
-        for link in network_model.links:
-            if isinstance(link, str):
-                continue
-            
-            source = getattr(link, 'source', 0)
-            target = getattr(link, 'target', 1)
-            source_id = f"node_{source}"
-            target_id = f"node_{target}"
-            
-            # Добавляем связи в обе стороны
-            if source_id not in self.network_dict:
-                self.network_dict[source_id] = []
-            if target_id not in self.network_dict:
-                self.network_dict[target_id] = []
-            
-            if target_id not in self.network_dict[source_id]:
-                self.network_dict[source_id].append(target_id)
-            if source_id not in self.network_dict[target_id]:
-                self.network_dict[target_id].append(source_id)
+        # Преобразуем связи в зависимости от типа
+        if isinstance(network_model.links, dict):
+            # SystemModel: links это словарь {(source, target): Link}
+            for (source, target), link in network_model.links.items():
+                source_id = str(source)
+                target_id = str(target)
+                
+                if source_id not in self.network_dict:
+                    self.network_dict[source_id] = []
+                if target_id not in self.network_dict:
+                    self.network_dict[target_id] = []
+                
+                if target_id not in self.network_dict[source_id]:
+                    self.network_dict[source_id].append(target_id)
+                if source_id not in self.network_dict[target_id]:
+                    self.network_dict[target_id].append(source_id)
+        elif isinstance(network_model.links, list):
+            # NetworkModel: links это список
+            for link in network_model.links:
+                if isinstance(link, str):
+                    continue
+                
+                source = getattr(link, 'source', 0)
+                target = getattr(link, 'target', 1)
+                source_id = f"node_{source}"
+                target_id = f"node_{target}"
+                
+                if source_id not in self.network_dict:
+                    self.network_dict[source_id] = []
+                if target_id not in self.network_dict:
+                    self.network_dict[target_id] = []
+                
+                if target_id not in self.network_dict[source_id]:
+                    self.network_dict[source_id].append(target_id)
+                if source_id not in self.network_dict[target_id]:
+                    self.network_dict[target_id].append(source_id)
         
         # Обновляем NetworkX граф
         self._update_networkx_graph()
@@ -1047,30 +1081,58 @@ class FixedInteractiveNetworkViewer:
             
             # Если есть атрибуты nodes и links, обрабатываем их
             if hasattr(network, 'nodes'):
-                for i, node in enumerate(getattr(network, 'nodes', [])):
-                    node_id = f"node_{i}"
-                    self.network_dict[node_id] = []
+                nodes = getattr(network, 'nodes', [])
+                # Обработка разных типов nodes
+                if isinstance(nodes, dict):
+                    # SystemModel: nodes это словарь {id: Node}
+                    for node_id, node in nodes.items():
+                        id_str = str(node_id)
+                        self.network_dict[id_str] = []
+                elif isinstance(nodes, list):
+                    # NetworkModel: nodes это список
+                    for i, node in enumerate(nodes):
+                        node_id = f"node_{i}"
+                        self.network_dict[node_id] = []
             
             # Обрабатываем связи
             if hasattr(network, 'links'):
-                for link in getattr(network, 'links', []):
-                    if isinstance(link, str):
-                        continue
-                    
-                    source = getattr(link, 'source', 0)
-                    target = getattr(link, 'target', 1)
-                    source_id = f"node_{source}"
-                    target_id = f"node_{target}"
-                    
-                    if source_id not in self.network_dict:
-                        self.network_dict[source_id] = []
-                    if target_id not in self.network_dict:
-                        self.network_dict[target_id] = []
-                    
-                    if target_id not in self.network_dict[source_id]:
-                        self.network_dict[source_id].append(target_id)
-                    if source_id not in self.network_dict[target_id]:
-                        self.network_dict[target_id].append(source_id)
+                links = getattr(network, 'links', [])
+                # Обработка разных типов links
+                if isinstance(links, dict):
+                    # SystemModel: links это словарь {(source, target): Link}
+                    for (source, target), link in links.items():
+                        source_id = str(source)
+                        target_id = str(target)
+                        
+                        if source_id not in self.network_dict:
+                            self.network_dict[source_id] = []
+                        if target_id not in self.network_dict:
+                            self.network_dict[target_id] = []
+                        
+                        if target_id not in self.network_dict[source_id]:
+                            self.network_dict[source_id].append(target_id)
+                        if source_id not in self.network_dict[target_id]:
+                            self.network_dict[target_id].append(source_id)
+                elif isinstance(links, list):
+                    # NetworkModel: links это список
+                    for link in links:
+                        if isinstance(link, str):
+                            continue
+                        
+                        source = getattr(link, 'source', 0)
+                        target = getattr(link, 'target', 1)
+                        source_id = f"node_{source}"
+                        target_id = f"node_{target}"
+                        
+                        if source_id not in self.network_dict:
+                            self.network_dict[source_id] = []
+                        if target_id not in self.network_dict:
+                            self.network_dict[target_id] = []
+                        
+                        if target_id not in self.network_dict[source_id]:
+                            self.network_dict[source_id].append(target_id)
+                        if source_id not in self.network_dict[target_id]:
+                            self.network_dict[target_id].append(source_id)
             
             # Обновляем NetworkX граф
             self._update_networkx_graph()
@@ -1079,6 +1141,8 @@ class FixedInteractiveNetworkViewer:
             
         except Exception as e:
             print(f"Ошибка при обновлении сети в FixedInteractiveNetworkViewer: {e}")
+            import traceback
+            traceback.print_exc()
             self._clear_network()
     
     def reset_network_display(self):
