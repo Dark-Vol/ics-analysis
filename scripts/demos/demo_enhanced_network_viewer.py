@@ -10,12 +10,12 @@ import tkinter as tk
 from tkinter import messagebox
 
 # Додаємо шлях до модулів
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from gui.enhanced_interactive_network_viewer import EnhancedInteractiveNetworkViewer
-from gui.themes.blood_angels_theme import BloodAngelsTheme
-from utils.incidence_matrix import IncidenceMatrixManager
-from analytics.birnbaum_reliability import BirnbaumReliabilityAnalyzer
+from src.gui.enhanced_interactive_network_viewer import EnhancedInteractiveNetworkViewer
+from src.gui.themes.blood_angels_theme import BloodAngelsTheme
+from src.utils.incidence_matrix import IncidenceMatrixManager
+from src.analytics.birnbaum_reliability import BirnbaumReliabilityAnalyzer
 
 
 def demo_incidence_matrix():
