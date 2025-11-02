@@ -49,13 +49,12 @@ def test_fixed_viewer():
         # Проверяем позиции узлов
         print(f"Позиції вузлів: {viewer.pos}")
         
-        # Тестируем формы узлов
-        print("\nТестування форм вузлів:")
+        # Тестируем степени узлов
+        print("\nТестування ступенів вузлів:")
         print("-" * 30)
         for node_id in viewer.G.nodes():
-            degree = viewer.G.degree(node_id)
-            shape = viewer._get_node_shape(degree)
-            print(f"  Вузол {node_id}: degree={degree}, форма={shape}")
+            degree = viewer.G.degree[node_id]
+            print(f"  Вузол {node_id}: degree={degree}")
         
         # Тестируем анализ связности
         try:
