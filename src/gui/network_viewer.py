@@ -342,7 +342,15 @@ class NetworkViewer:
         # Подсветка пути
         if len(path) > 1:
             # Подсветка узлов пути
-            pos = {node.id: (node.x, node.y) for node in self.network.nodes}
+            # Получаем позиции в зависимости от типа сети
+            if isinstance(self.network.nodes, dict):
+                # SystemModel: nodes это словарь {id: Node}
+                pos = {node.id: (node.x, node.y) for node in self.network.nodes.values()}
+            elif isinstance(self.network.nodes, list):
+                # NetworkModel: nodes это список NetworkNode
+                pos = {node.id: (node.x, node.y) for node in self.network.nodes}
+            else:
+                return
             
             path_nodes = path
             path_edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
