@@ -214,3 +214,5 @@ class IncidenceMatrixManager:
             'max_in_degree': int(np.max(in_degrees))
         }
 
+
+
