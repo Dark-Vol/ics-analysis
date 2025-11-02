@@ -175,7 +175,7 @@ class MainWindow:
         
         # Кнопка создания сети
         create_network_btn = ttk.Button(button_frame, text="Создать сеть", 
-                                       command=self._create_network)
+                                       command=self._open_network_dialog)
         create_network_btn.pack(side=tk.LEFT, padx=5)
         
         # Кнопка загрузки сети
