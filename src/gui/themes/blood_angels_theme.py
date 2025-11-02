@@ -193,6 +193,17 @@ class BloodAngelsTheme:
                        foreground=cls.COLORS['text_primary'],
                        borderwidth=2,
                        arrowcolor=cls.COLORS['text_primary'])
+        
+        # Стиль для LabelFrame
+        style.configure('BloodAngels.TLabelframe',
+                       background=cls.COLORS['bg_secondary'],
+                       borderwidth=2,
+                       relief='raised')
+        
+        style.configure('BloodAngels.TLabelframe.Label',
+                       background=cls.COLORS['bg_secondary'],
+                       foreground=cls.COLORS['text_secondary'],
+                       font=cls.FONTS['subtitle'])
     
     @classmethod
     def configure_matplotlib_style(cls):
